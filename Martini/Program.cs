@@ -6,6 +6,7 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Martini
@@ -33,11 +34,6 @@ namespace Martini
             var iniFile2 = IniFile.From("test.ini");
             var serv2 = iniFile2["database"]["server"].First();
             var section = iniFile2.AddSection("downloads");
-
-            //var props = db1.Properties;
-            //var sections = sentences.Where(s => s.Definition.SentenceType == SentenceType.Section);
-
-
         }
     }
 
@@ -80,17 +76,18 @@ namespace Martini
 
     internal enum TokenType
     {
+        Uninitialized,
         StartOfLine,
         EndOfLine,
-        LeftBracket,
-        RightBracket,
-        EqualSign,
+        LeftSectionDelimiter,
+        RightSectionDelimiter,
+        ProperetyValueDelimiter,
         Text,
         Section,
         Property,
         Value,
+        CommentIndicator,
         Comment,
-        Semicolon,
         QuotationMark,
         EscapeSequence,
     }
@@ -305,8 +302,6 @@ namespace Martini
 
         public override string ToString()
         {
-            //var line = new StringBuilder();
-            
             return string.Join(string.Empty, Tokens);
         }
     }
@@ -375,9 +370,26 @@ namespace Martini
                     continue;
                 }
 
-                var isEscapedDelimiterToken = i > 0 && Grammar.EscapeCharacters.Contains(c) &&
-                                              line[i - 1] == Grammar.Backslash;
+                var isEscapedDelimiterToken = i > 0 && Grammar.EscapeCharacters.Contains(c) && line[i - 1] == Grammar.Backslash;
                 if (isEscapedDelimiterToken)
+                {
+                    continue;
+                }
+
+                // ignore inline section delimiters
+                var ignoreInlineSectionDelimiter =
+                    // is inline left bracket?
+                    (tokenType == TokenType.LeftSectionDelimiter && i > 0) ||
+                    // is inline right bracket?
+                    (tokenType == TokenType.RightSectionDelimiter && i <= line.Length - 1 && delimiterTokens.Skip(1).FirstOrDefault()?.Type != TokenType.LeftSectionDelimiter);
+                if (ignoreInlineSectionDelimiter)
+                {
+                    continue;
+                }
+
+                // if equal sign already found then ignore the others
+                var ignoreInlinePropertyValueSeparator = delimiterTokens.Any(t => t.Type == TokenType.ProperetyValueDelimiter);
+                if (ignoreInlinePropertyValueSeparator)
                 {
                     continue;
                 }
@@ -398,7 +410,7 @@ namespace Martini
                 FromColumn = line.Length
             });
 
-            // get what's left as text tokens
+            // get what's left as text tokens and put everything in a new list
 
             var previousToken = delimiterTokens.First();
 
@@ -470,29 +482,29 @@ namespace Martini
                     SentenceType = SentenceType.Comment,
                     AllowedTokenTypes = new[]
                     {
-                        new TokenType[] {TokenType.Semicolon, TokenType.Text},
-                        new TokenType[] {TokenType.Semicolon},
+                        new TokenType[] {TokenType.CommentIndicator, TokenType.Text},
+                        new TokenType[] {TokenType.CommentIndicator},
                     },
-                    ExactTokenTypes = new TokenType[] {TokenType.Semicolon, TokenType.Comment}
+                    ExactTokenTypes = new TokenType[] {TokenType.CommentIndicator, TokenType.Comment}
                 },
                 new SentenceDefinition
                 {
                     SentenceType = SentenceType.Section,
                     AllowedTokenTypes = new[]
                     {
-                        new TokenType[] {TokenType.LeftBracket, TokenType.Text, TokenType.RightBracket},
+                        new TokenType[] { TokenType.LeftSectionDelimiter, TokenType.Text, TokenType.RightSectionDelimiter },
                     },
-                    ExactTokenTypes = new TokenType[] {TokenType.LeftBracket, TokenType.Section, TokenType.RightBracket},
+                    ExactTokenTypes = new TokenType[] {TokenType.LeftSectionDelimiter, TokenType.Section, TokenType.RightSectionDelimiter},
                 },
                 new SentenceDefinition
                 {
                     SentenceType = SentenceType.Property,
                     AllowedTokenTypes = new[]
                     {
-                        new TokenType[] {TokenType.Text, TokenType.EqualSign, TokenType.Text},
-                        new TokenType[] {TokenType.Text, TokenType.EqualSign},
+                        new TokenType[] {TokenType.Text, TokenType.ProperetyValueDelimiter, TokenType.Text},
+                        new TokenType[] {TokenType.Text, TokenType.ProperetyValueDelimiter},
                     },
-                    ExactTokenTypes = new TokenType[] {TokenType.Property, TokenType.EqualSign, TokenType.Value},
+                    ExactTokenTypes = new TokenType[] {TokenType.Property, TokenType.ProperetyValueDelimiter, TokenType.Value},
                 },
             };
 
@@ -500,29 +512,13 @@ namespace Martini
 
         public static readonly char Backslash = '\\';
 
-        //public static Dictionary<char, TokenType> DelimiterTokenTypeMap = new Dictionary<char, TokenType>
-        //{
-        //    {'[', TokenType.LeftBracket},
-        //    {']', TokenType.RightBracket},
-        //    {'=', TokenType.EqualSign},
-        //    {';', TokenType.Semicolon},
-        //};
-
         public static dynamic DelimiterTokenTypeMap = new BiDictionary<char, TokenType>("Delimiters", "TokenTypes")
         {
-            {'[', TokenType.LeftBracket},
-            {']', TokenType.RightBracket},
-            {'=', TokenType.EqualSign},
-            {';', TokenType.Semicolon},
+            {'[', TokenType.LeftSectionDelimiter},
+            {']', TokenType.RightSectionDelimiter},
+            {'=', TokenType.ProperetyValueDelimiter},
+            {';', TokenType.CommentIndicator},
         };
-
-        //public static Dictionary<TokenType, char> Delimiters = new Dictionary<char, TokenType>
-        //{
-        //    {'[', TokenType.LeftBracket},
-        //    {']', TokenType.RightBracket},
-        //    {'=', TokenType.EqualSign},
-        //    {';', TokenType.Semicolon},
-        //};
 
         public static readonly HashSet<char> EscapeCharacters = new HashSet<char>
         {
@@ -595,12 +591,53 @@ namespace Martini
 
     internal class Parser
     {
-        public static IniFile Parse(string ini)
+        public static IniFile Parse(string ini, IniParserSettings settings)
         {
             var firstSentence = Tokenizer.Tokenize(ini);
             DetermineSentenceType(firstSentence);
+
+            HandleDuplicateSections(firstSentence, settings.DuplicateSectionHandling);
+
             var iniFile = new IniFile(firstSentence);
             return iniFile;
+        }
+
+        private static void HandleDuplicateSections(Sentence firstSentence, DuplicateSectionHandling duplicateSectionHandling)
+        {
+            if (duplicateSectionHandling == DuplicateSectionHandling.Allow)
+            {
+                return;
+            }
+
+            var duplicateSectionsGroups =
+                firstSentence.After.Where(x => x.Type == SentenceType.Section)
+                .GroupBy(x => (string)x.Tokens.Section(), (name, sections) => new
+                {
+                    name,
+                    sections
+                })
+                .Where(x => x.sections.Count() > 1)
+                .ToList();
+
+            if (!duplicateSectionsGroups.Any())
+            {
+                return;
+            }
+
+            if (duplicateSectionHandling == DuplicateSectionHandling.Disallow)
+            {
+                throw new DuplicateSectionsException();
+            }
+
+            if (duplicateSectionHandling == DuplicateSectionHandling.Merge)
+            {
+                // todo merge sections
+                foreach (var duplicateSectionsGroup in duplicateSectionsGroups)
+                {
+                    var baseSection = duplicateSectionsGroup.sections.First();
+                    var mergeSections = duplicateSectionsGroup.sections.Skip(1);
+                }
+            }
         }
 
         public static void DetermineSentenceType(Sentence sentence)
@@ -613,17 +650,16 @@ namespace Martini
                     continue;
                 }
 
-                var sentenceDefinitionMatches =
-                    from sentenceDefinition in Grammar.SentenceDefinitions
-                    from tokens in sentenceDefinition.AllowedTokenTypes
-                    where tokens.SequenceEqual(currentSentence.Tokens.Select(t => t.Type))
-                    select sentenceDefinition;
-
-                var sentenceDefinitionMatch = sentenceDefinitionMatches.SingleOrDefault();
+                var sentenceDefinitionMatch =
+                    (from sentenceDefinition in Grammar.SentenceDefinitions
+                     from tokens in sentenceDefinition.AllowedTokenTypes
+                     where tokens.SequenceEqual(currentSentence.Tokens.Select(t => t.Type))
+                     select sentenceDefinition).SingleOrDefault();
 
                 if (sentenceDefinitionMatch == null)
                 {
-                    throw new UnrecognizedLineException();
+                    currentSentence.Type = SentenceType.Invalid;
+                    continue;
                 }
 
                 currentSentence.Type = sentenceDefinitionMatch.SentenceType;
@@ -638,6 +674,7 @@ namespace Martini
                     {
                         currentSentence.Tokens[i].Type = exactTokenType;
                     }
+                    // found less tokens then actually required so add the missing one
                     else
                     {
                         var newToken = new Token(string.Empty)
@@ -695,9 +732,20 @@ namespace Martini
         }
     }
 
-    internal class UnrecognizedLineException : Exception
+    public class InvalidLineException : Exception
     {
+        public int LineIndex { get; set; }
+        public string Value { get; set; }
     }
+
+    public class PropertyExistsException : Exception
+    {
+        public string Section { get; set; }
+        public string Properety { get; set; }
+        public override string Message => $"Property \"{Properety}\" already exists in section [{Section}].";
+    }
+
+    public class DuplicateSectionsException : Exception { }
 
     internal static class Extensions
     {
@@ -765,7 +813,7 @@ namespace Martini
         public static IniFile From(string fileName, IniParserSettings settings = null)
         {
             var iniText = File.ReadAllText(fileName);
-            var iniFile = Parser.Parse(iniText);
+            var iniFile = Parser.Parse(iniText, settings);
             return iniFile;
         }
 
@@ -824,6 +872,33 @@ namespace Martini
                     where item.Type == SentenceType.Property
                     select new IniProperty(item);
             }
+        }
+
+        public IniProperty AddProperty(string name, string value, bool allowDuplicateProperties = false)
+        {
+            var newProperty = PropertyFactory.CreateProperty(name, value);
+
+            var properties =
+                (from item in _section.After.Skip(1).TakeWhile(item => item.Type != SentenceType.Section)
+                 where item.Type == SentenceType.Property
+                 select item).ToList();
+
+            if (!allowDuplicateProperties)
+            {
+                var propertyExists = properties.Any(t => ((string)t.Tokens.Property()).Equals(name, StringComparison.OrdinalIgnoreCase));
+                if (propertyExists)
+                {
+                    throw new PropertyExistsException
+                    {
+                        Section = Name,
+                        Properety = name
+                    };
+                }
+            }
+
+            properties.Last().Next = newProperty;
+
+            return new IniProperty(newProperty);
         }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
@@ -885,12 +960,45 @@ namespace Martini
                 Type = SentenceType.Section,
                 Tokens = new List<Token>
                 {
-                    new Token(TokenType.LeftBracket),
+                    new Token(TokenType.LeftSectionDelimiter),
                     new Token(TokenType.Section, name),
-                    new Token(TokenType.RightBracket),
+                    new Token(TokenType.RightSectionDelimiter),
                 }
             };
             return section;
+        }
+    }
+
+    internal class PropertyFactory
+    {
+        public static Sentence CreateProperty(string name, string value)
+        {
+            var property = new Sentence
+            {
+                Type = SentenceType.Property,
+                Tokens = new List<Token>
+                {
+                    new Token(TokenType.Property, name),
+                    new Token(TokenType.ProperetyValueDelimiter),
+                    new Token(TokenType.Value),
+                }
+            };
+            return property;
+        }
+    }
+
+    internal static class StringFormatter
+    {
+        public static string Unescape(this string text)
+        {
+
+            return null;
+        }
+
+        public static string Escape(this string text)
+        {
+            //Regex.Replace(text, )
+            return null;
         }
     }
 }
