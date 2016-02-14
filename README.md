@@ -3,9 +3,7 @@ Advanced C# INI Parser with LINQ support.
 
 ---
 
-**`Martini`** is a growing library for reading and writing `ini` files. Like my other projects its main purpose is simple usage with advanced features.
-
-Don't be shocked that the entire code is inside a single file `Program.cs`. I keep it that way to be able to implemement changes quickly and experiment easily. Besides that (it will be refactored later when the API is stable) everything else meets all clean-code rules.
+**`Martini`** is a growing library for reading and writing `ini` files. Like my other projects its main purpose is simple usage with advanced features that meet all clean-code rules.
 
 ### Features
 **`Martini`**'s features:
