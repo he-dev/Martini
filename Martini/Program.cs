@@ -32,7 +32,7 @@ namespace Martini
             dynamic iniFile1 = IniFile.From("test.ini", new IniParserSettings
             {
                 DuplicateSectionHandling = DuplicateSectionHandling.Merge,
-                DuplicatePropertyHandling = DuplicatePropertyHandling.Rename
+                DuplicatePropertyHandling = DuplicatePropertyHandling.KeepLast
             });
             iniFile1.Save("test2.ini");
 
@@ -147,7 +147,7 @@ namespace Martini
         {
             return
                 !ReferenceEquals(x, null)
-                && x.ToString() == y;
+                && x.ToString().Equals(y, StringComparison.OrdinalIgnoreCase);
         }
 
         public static bool operator !=(Token x, string y)
@@ -286,7 +286,7 @@ namespace Martini
         }
     }
 
-    [DebuggerDisplay("{ToString()} at {Line} TokensCount = {Tokens.Count}")]
+    [DebuggerDisplay("{ToString()} at {Line}")]
     internal class Sentence
     {
         private readonly LinkedObject<Sentence> _linkedObject;
@@ -650,7 +650,7 @@ namespace Martini
 
             var duplicateSectionsGroups =
                 firstSentence.After.Sections()
-                .GroupBy(x => (string)x.Tokens.Section(), (name, sections) => new
+                .GroupBy(x => (string)x.SectionToken(), (name, sections) => new
                 {
                     name,
                     sections
@@ -700,7 +700,7 @@ namespace Martini
             {
                 var duplicatePropertyGroups =
                     section.Contents().Properties()
-                    .GroupBy(x => (string)x.Tokens.Property(), (name, properties) => new
+                    .GroupBy(x => (string)x.PropertyToken(), (name, properties) => new
                     {
                         name,
                         properties
@@ -726,15 +726,47 @@ namespace Martini
                         var counter = 1;
                         foreach (var property in duplicatePropertyGroup.properties)
                         {
-                            var name = property.Tokens.Property().Value;
-                            property.Tokens.Property().Value = $"{name}{counter++}";
+                            var name = property.PropertyToken().Value;
+                            property.Tokens.PropertyToken().Value = $"{name}{counter++}";
                         }
                     }
                 }
 
-                if(duplicatePropertyHandling == DuplicatePropertyHandling.KeepFirst) { }
+                var removeProperties = new Action<IEnumerable<Sentence>>(propertiesToRemove =>
+                {
+                    foreach (var propertyToRemove in propertiesToRemove)
+                    {
+                        // also remove comments
+                        var comments = propertyToRemove.Comments();
+                        foreach (var comment in comments)
+                        {
+                            comment.Remove();
+                        }
+                        // finally the property
+                        propertyToRemove.Remove();
+                    }
+                });
 
-                if (duplicatePropertyHandling == DuplicatePropertyHandling.KeepLast) { }
+                if (duplicatePropertyHandling == DuplicatePropertyHandling.KeepFirst)
+                {
+                    foreach (var duplicatePropertyGroup in duplicatePropertyGroups.ToList())
+                    {
+                        // skip the first property that we want to keep
+                        var propertiesToRemove = duplicatePropertyGroup.properties.Skip(1);
+                        removeProperties(propertiesToRemove);
+                    }
+                }
+
+                if (duplicatePropertyHandling == DuplicatePropertyHandling.KeepLast)
+                {
+                    foreach (var duplicatePropertyGroup in duplicatePropertyGroups.ToList())
+                    {
+                        // skip the first property that we want to keep
+                        var lastProperty = duplicatePropertyGroup.properties.Last();
+                        var propertiesToRemove = duplicatePropertyGroup.properties.Where(p => p != lastProperty);
+                        removeProperties(propertiesToRemove);                        
+                    }
+                }
             }
         }
 
@@ -843,35 +875,47 @@ namespace Martini
         public override string Message => $"Property \"{Properety}\" already exists in section [{Section}].";
     }
 
+    // todo add context info
     public class DuplicateSectionsException : Exception { }
 
+    // todo add context info
     public class DuplicatePropertiesException : Exception { }
 
     internal static class Extensions
     {
-        public static Token Section(this IEnumerable<Token> tokens)
+        public static Token SectionToken(this Sentence sentence)
+        {
+            return sentence.Tokens.SectionToken();
+        }
+
+        public static Token PropertyToken(this Sentence sentence)
+        {
+            return sentence.Tokens.PropertyToken();
+        }
+
+        public static Token SectionToken(this IEnumerable<Token> tokens)
         {
             return tokens.Single(t => t.Type == TokenType.Section);
         }
 
-        public static Token Property(this IEnumerable<Token> tokens)
+        public static Token PropertyToken(this IEnumerable<Token> tokens)
         {
             return tokens.Single(t => t.Type == TokenType.Property);
         }
 
-        public static Token Value(this IEnumerable<Token> tokens)
+        public static Token ValueToken(this IEnumerable<Token> tokens)
         {
             return tokens.Single(t => t.Type == TokenType.Value);
         }
 
-        public static Token Comment(this IEnumerable<Token> tokens)
+        public static Token CommentToken(this IEnumerable<Token> tokens)
         {
             return tokens.Single(t => t.Type == TokenType.Comment);
         }
 
-        public static IEnumerable<Sentence> Comments(this IEnumerable<Sentence> sentences)
+        public static IEnumerable<Sentence> Comments(this Sentence sentences)
         {
-            return sentences.TakeWhile(x => x.Type == SentenceType.Comment);
+            return sentences.Before.Skip(1).TakeWhile(x => x.Type == SentenceType.Comment).Reverse();
         }
 
         public static IEnumerable<Sentence> Contents(this Sentence sentence)
@@ -917,9 +961,9 @@ namespace Martini
         {
             get
             {
-                var sentence = _firstSentence.After.SingleOrDefault(x =>
-                    x.Type == SentenceType.Section
-                    && x.Tokens.Section().ToString().Equals(name, StringComparison.OrdinalIgnoreCase));
+                var sentence =
+                    _firstSentence.After.Sections()
+                    .SingleOrDefault(x => x.SectionToken() == name);
 
                 var section = sentence == null ? null : new IniSection(sentence);
                 return section;
@@ -960,7 +1004,7 @@ namespace Martini
 
         internal IniSection(Sentence section)
         {
-            Debug.Assert(section.Tokens.Section() != null);
+            Debug.Assert(section.Tokens.SectionToken() != null);
             _section = section;
         }
 
@@ -971,22 +1015,19 @@ namespace Martini
 
         public List<IniComment> Comments
         {
-            get { return _section.Before.Skip(1).Comments().Select(x => new IniComment(x)).ToList(); }
+            get { return _section.Comments().Select(x => new IniComment(x)).ToList(); }
         }
 
         public string Name
         {
-            get { return _section.Tokens.Section(); }
+            get { return _section.Tokens.SectionToken(); }
         }
 
         public IEnumerable<IniProperty> Properties
         {
             get
             {
-                return
-                    from item in _section.After.Skip(1).TakeWhile(item => item.Type != SentenceType.Section)
-                    where item.Type == SentenceType.Property
-                    select new IniProperty(item);
+                return _section.Contents().Properties().Select(x => new IniProperty(x));
             }
         }
 
@@ -994,14 +1035,11 @@ namespace Martini
         {
             var newProperty = PropertyFactory.CreateProperty(name, value);
 
-            var properties =
-                (from item in _section.After.Skip(1).TakeWhile(item => item.Type != SentenceType.Section)
-                 where item.Type == SentenceType.Property
-                 select item).ToList();
+            var properties = _section.Contents().Properties().ToList();
 
             if (!allowDuplicateProperties)
             {
-                var propertyExists = properties.Any(t => ((string)t.Tokens.Property()).Equals(name, StringComparison.OrdinalIgnoreCase));
+                var propertyExists = properties.Any(t => t.Tokens.PropertyToken() == name);
                 if (propertyExists)
                 {
                     throw new PropertyExistsException
@@ -1036,12 +1074,12 @@ namespace Martini
 
         public string Text
         {
-            get { return _comment.Tokens.Comment(); }
-            set { _comment.Tokens.Comment().Value = value; }
+            get { return _comment.Tokens.CommentToken(); }
+            set { _comment.Tokens.CommentToken().Value = value; }
         }
     }
 
-    [DebuggerDisplay("Name = {Name} Value = {Value}")]
+    [DebuggerDisplay("Name = {Name} ValueToken = {Value}")]
     public class IniProperty
     {
         private readonly Sentence _property;
@@ -1053,17 +1091,17 @@ namespace Martini
 
         public List<IniComment> Comments
         {
-            get { return _property.Before.Skip(1).Comments().Select(x => new IniComment(x)).ToList(); }
+            get { return _property.Comments().Select(x => new IniComment(x)).ToList(); }
         }
 
         public string Name
         {
-            get { return _property.Tokens.Property(); }
+            get { return _property.Tokens.PropertyToken(); }
         }
 
         public string Value
         {
-            get { return _property.Tokens.Value(); }
+            get { return _property.Tokens.ValueToken(); }
         }
     }
 
