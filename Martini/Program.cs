@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
@@ -16,17 +17,23 @@ namespace Martini
         private static void Main(string[] args)
         {
 
-            //var foo = new LinkedObject<string>("foo")
-            //{
-            //    Next = new LinkedObject<string>("bar")
-            //    {
-            //        Next = new LinkedObject<string>("baz")
-            //    }
-            //};
+            var foo = new LinkedObject<string>("foo");
+            var bar = new LinkedObject<string>("bar");
+            var baz = new LinkedObject<string>("baz");
+
+            foo.Next = baz;
+            foo.Next = bar;
+
+            bar.Remove();
+
 
             //foo.Next.Remove();
 
-            dynamic iniFile1 = IniFile.From("test.ini");
+            dynamic iniFile1 = IniFile.From("test.ini", new IniParserSettings
+            {
+                DuplicateSectionHandling = DuplicateSectionHandling.Merge,
+                DuplicatePropertyHandling = DuplicatePropertyHandling.Rename
+            });
             iniFile1.Save("test2.ini");
 
             var serv1 = ((IEnumerable<IniProperty>)iniFile1.database.server).First();
@@ -48,8 +55,8 @@ namespace Martini
     {
         Allow,
         Disallow,
-        TakeFirst,
-        TakeLast,
+        KeepFirst,
+        KeepLast,
         Rename
     }
 
@@ -177,7 +184,7 @@ namespace Martini
         }
     }
 
-    [DebuggerDisplay("Value = {Value?.ToString()}")]
+    [DebuggerDisplay("_object = {_object?.ToString()}")]
     internal class LinkedObject<T>
     {
         private T _object;
@@ -203,8 +210,17 @@ namespace Martini
             get { return _previous; }
             set
             {
+                value.Remove();
+
+                value._previous = _previous;
+                value._next = this;
+
+                if (_previous != null)
+                {
+                    _previous._next = value;
+                }
+
                 _previous = value;
-                _previous._next = this;
             }
         }
 
@@ -213,8 +229,17 @@ namespace Martini
             get { return _next; }
             set
             {
+                value.Remove();
+
+                value._previous = this;
+                value._next = _next;
+
+                if (_next != null)
+                {
+                    _next._previous = value;
+                }
+
                 _next = value;
-                _next._previous = this;
             }
         }
 
@@ -246,14 +271,22 @@ namespace Martini
 
         public void Remove()
         {
-            _previous.Next = _next;
-            _next.Previous = _previous;
+            if (_previous != null)
+            {
+                _previous._next = _next;
+            }
+
+            if (_next != null)
+            {
+                _next._previous = _previous;
+            }
+
             _previous = null;
             _next = null;
         }
     }
 
-    [DebuggerDisplay("Line = {Line} DelimiterTokenTypeMap = {Tokens.Count}")]
+    [DebuggerDisplay("{ToString()} at {Line} TokensCount = {Tokens.Count}")]
     internal class Sentence
     {
         private readonly LinkedObject<Sentence> _linkedObject;
@@ -298,6 +331,11 @@ namespace Martini
         public IEnumerable<Sentence> After
         {
             get { return _linkedObject.After.Select(x => (Sentence)x); }
+        }
+
+        public void Remove()
+        {
+            _linkedObject.Remove();
         }
 
         public override string ToString()
@@ -597,6 +635,7 @@ namespace Martini
             DetermineSentenceType(firstSentence);
 
             HandleDuplicateSections(firstSentence, settings.DuplicateSectionHandling);
+            HandleDuplicateProperties(firstSentence, settings.DuplicatePropertyHandling);
 
             var iniFile = new IniFile(firstSentence);
             return iniFile;
@@ -610,7 +649,7 @@ namespace Martini
             }
 
             var duplicateSectionsGroups =
-                firstSentence.After.Where(x => x.Type == SentenceType.Section)
+                firstSentence.After.Sections()
                 .GroupBy(x => (string)x.Tokens.Section(), (name, sections) => new
                 {
                     name,
@@ -631,12 +670,71 @@ namespace Martini
 
             if (duplicateSectionHandling == DuplicateSectionHandling.Merge)
             {
-                // todo merge sections
                 foreach (var duplicateSectionsGroup in duplicateSectionsGroups)
                 {
                     var baseSection = duplicateSectionsGroup.sections.First();
                     var mergeSections = duplicateSectionsGroup.sections.Skip(1);
+                    foreach (var mergeSection in mergeSections)
+                    {
+                        var sectionContent = mergeSection.Contents().ToList();
+                        foreach (var sentence in sectionContent)
+                        {
+                            var lastBaseSectionProperty = baseSection.Contents().Last();
+                            lastBaseSectionProperty.Next = sentence;
+                        }
+                        mergeSection.Remove();
+                    }
                 }
+            }
+        }
+
+        private static void HandleDuplicateProperties(Sentence firstSentence, DuplicatePropertyHandling duplicatePropertyHandling)
+        {
+            if (duplicatePropertyHandling == DuplicatePropertyHandling.Allow)
+            {
+                return;
+            }
+
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (var section in firstSentence.After.Sections())
+            {
+                var duplicatePropertyGroups =
+                    section.Contents().Properties()
+                    .GroupBy(x => (string)x.Tokens.Property(), (name, properties) => new
+                    {
+                        name,
+                        properties
+                    })
+                    .Where(x => x.properties.Count() > 1)
+                    .ToList();
+
+                if (!duplicatePropertyGroups.Any())
+                {
+                    continue;
+                }
+
+                if (duplicatePropertyHandling == DuplicatePropertyHandling.Disallow)
+                {
+                    throw new DuplicatePropertiesException();
+                }
+
+                if (duplicatePropertyHandling == DuplicatePropertyHandling.Rename)
+                {
+                    foreach (var duplicatePropertyGroup in duplicatePropertyGroups)
+                    {
+                        // append counter to each property
+                        var counter = 1;
+                        foreach (var property in duplicatePropertyGroup.properties)
+                        {
+                            var name = property.Tokens.Property().Value;
+                            property.Tokens.Property().Value = $"{name}{counter++}";
+                        }
+                    }
+                }
+
+                if(duplicatePropertyHandling == DuplicatePropertyHandling.KeepFirst) { }
+
+                if (duplicatePropertyHandling == DuplicatePropertyHandling.KeepLast) { }
             }
         }
 
@@ -747,6 +845,8 @@ namespace Martini
 
     public class DuplicateSectionsException : Exception { }
 
+    public class DuplicatePropertiesException : Exception { }
+
     internal static class Extensions
     {
         public static Token Section(this IEnumerable<Token> tokens)
@@ -772,6 +872,22 @@ namespace Martini
         public static IEnumerable<Sentence> Comments(this IEnumerable<Sentence> sentences)
         {
             return sentences.TakeWhile(x => x.Type == SentenceType.Comment);
+        }
+
+        public static IEnumerable<Sentence> Contents(this Sentence sentence)
+        {
+            var sectionContents = sentence.After.Skip(1).TakeWhile(x => x.Type != SentenceType.Section).ToList();
+            return sectionContents;
+        }
+
+        public static IEnumerable<Sentence> Sections(this IEnumerable<Sentence> sentences)
+        {
+            return sentences.Where(x => x.Type == SentenceType.Section);
+        }
+
+        public static IEnumerable<Sentence> Properties(this IEnumerable<Sentence> sentences)
+        {
+            return sentences.Where(x => x.Type == SentenceType.Property);
         }
     }
 
