@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Martini.Collections;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Martini.Tests.LinkedObjectTests
