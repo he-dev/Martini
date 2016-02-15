@@ -1,7 +1,6 @@
 using System.Collections.Generic;
-using Martini._data;
 
-namespace Martini._factories
+namespace Martini
 {
     internal class PropertyFactory
     {
@@ -14,7 +13,7 @@ namespace Martini._factories
                 {
                     new Token(TokenType.Property, name),
                     new Token(TokenType.ProperetyValueDelimiter),
-                    new Token(TokenType.Value),
+                    new Token(TokenType.Value, value),
                 }
             };
             return property;

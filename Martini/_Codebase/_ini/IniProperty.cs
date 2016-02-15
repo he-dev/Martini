@@ -1,31 +1,26 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Martini._data;
+using Martini;
 
-namespace Martini._ini
+namespace Martini
 {
     [DebuggerDisplay("Name = {Name} Value = {Value}")]
-    public class IniProperty
+    public class IniProperty : IniElement
     {
-        private readonly Sentence _property;
-
-        internal IniProperty(Sentence property)
-        {
-            _property = property;
-        }
+        internal IniProperty(Sentence property) : base(property) { }
 
         public List<IniComment> Comments
         {
-            get { return _property.Comments().Select(x => new IniComment(x)).ToList(); }
+            get { return Sentence.Comments().Select(x => new IniComment(x)).ToList(); }
         }
 
-        public string Name => _property.Tokens.PropertyToken();
+        public string Name => Sentence.Tokens.PropertyToken();
 
         public string Value
         {
-            get { return _property.Tokens.ValueToken(); }
-            set { _property.Tokens.ValueToken().Value = value; }
+            get { return Sentence.Tokens.ValueToken(); }
+            set { Sentence.Tokens.ValueToken().Value = value; }
         }
     }
 }

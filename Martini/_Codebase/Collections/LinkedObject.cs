@@ -4,7 +4,7 @@ using System.Diagnostics;
 namespace Martini.Collections
 {
     [DebuggerDisplay("_object = {_object?.ToString()}")]
-    internal class LinkedObject<T>
+    internal class LinkedObject<T> where T : class 
     {
         private T _object;
         private LinkedObject<T> _previous;
@@ -21,7 +21,7 @@ namespace Martini.Collections
 
         public static implicit operator T(LinkedObject<T> linkedObject)
         {
-            return linkedObject._object;
+            return linkedObject?._object;
         }
 
         public LinkedObject<T> Previous

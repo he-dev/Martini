@@ -52,9 +52,21 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="_codebase\ExtensionsTests.cs" />
+    <Compile Include="_codebase\IniWriterTests.cs" />
     <Compile Include="_codebase\LinkedObjectTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="_codebase\ParserTests.cs" />
     <Compile Include="_codebase\TokenizerTests.cs" />
+    <Compile Include="_codebase\_data\SentenceTests.cs" />
+    <Compile Include="_codebase\_data\TokenTests.cs" />
+    <Compile Include="_codebase\_factories\PropertyFactoryTests.cs" />
+    <Compile Include="_codebase\_factories\CommentsFactoryTests.cs" />
+    <Compile Include="_codebase\_factories\SectionFactoryTests.cs" />
+    <Compile Include="_codebase\_ini\IniCommentTests.cs" />
+    <Compile Include="_codebase\_ini\IniFileTests.cs" />
+    <Compile Include="_codebase\_ini\IniPropertyTests.cs" />
+    <Compile Include="_codebase\_ini\IniSectionTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Martini\Martini.csproj">

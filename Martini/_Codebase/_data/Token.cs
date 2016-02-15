@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Martini._data
+namespace Martini
 {
     [DebuggerDisplay("Type = {Type} Token = {_token}")]
     internal class Token
@@ -15,6 +15,7 @@ namespace Martini._data
 
         public Token(char token) : this(token.ToString()) { }
 
+        // todo this grammar part has to be refactored
         public Token(TokenType tokenType) : this((char)Grammar.DelimiterTokenTypeMap.TokenTypes[tokenType])
         {
             Type = tokenType;

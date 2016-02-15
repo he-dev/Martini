@@ -60,8 +60,10 @@
     <Compile Include="_Codebase\_data\Sentence.cs" />
     <Compile Include="_Codebase\_data\Token.cs" />
     <Compile Include="_Codebase\_factories\PropertyFactory.cs" />
+    <Compile Include="_Codebase\_factories\CommentFactory.cs" />
     <Compile Include="_Codebase\_factories\SectionFactory.cs" />
     <Compile Include="_Codebase\_ini\IniComment.cs" />
+    <Compile Include="_Codebase\_ini\IniElement.cs" />
     <Compile Include="_Codebase\_ini\IniFile.cs" />
     <Compile Include="_Codebase\_ini\IniProperty.cs" />
     <Compile Include="_Codebase\_ini\IniSection.cs" />

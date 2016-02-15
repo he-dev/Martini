@@ -2,38 +2,30 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
-using Martini._data;
-using Martini._factories;
 
-namespace Martini._ini
+namespace Martini
 {
     [DebuggerDisplay("Name = {Name}")]
-    public class IniSection : DynamicObject
+    public class IniSection : IniElement
     {
-        private readonly Sentence _section;
-
-        internal IniSection(Sentence section)
-        {
-            Debug.Assert(section.Tokens.SectionToken() != null);
-            _section = section;
-        }
+        internal IniSection(Sentence section) : base(section) { }
 
         public IEnumerable<IniProperty> this[string name] =>
-            _section.Contents().Properties()
-                .Where(x => Extensions.PropertyToken((Sentence) x) == name)
+            Sentence.Contents().Properties()
+                .Where(x => x.PropertyToken() == name)
                 .Select(x => new IniProperty(x));
 
-        public List<IniComment> Comments => _section.Comments().Select(x => new IniComment(x)).ToList();
+        public List<IniComment> Comments => Sentence.Comments().Select(x => new IniComment(x)).ToList();
 
-        public string Name => _section.Tokens.SectionToken();
+        public string Name => Sentence.Tokens.SectionToken();
 
-        public IEnumerable<IniProperty> Properties => _section.Contents().Properties().Select(x => new IniProperty(x));
+        public IEnumerable<IniProperty> Properties => Sentence.Contents().Properties().Select(x => new IniProperty(x));
 
         public IniProperty AddProperty(string name, string value, bool allowDuplicateProperties = false)
         {
             var newProperty = PropertyFactory.CreateProperty(name, value);
 
-            var properties = _section.Contents().Properties().ToList();
+            var properties = Sentence.Contents().Properties().ToList();
 
             if (!allowDuplicateProperties)
             {

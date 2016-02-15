@@ -2,10 +2,8 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
-using Martini._data;
-using Martini._factories;
 
-namespace Martini._ini
+namespace Martini
 {
     internal class IniFile : DynamicObject
     {

@@ -3,14 +3,13 @@ using System.Diagnostics;
 using System.Linq;
 using Martini.Collections;
 
-namespace Martini._data
+namespace Martini
 {
     [DebuggerDisplay("{ToString()} at {Line}")]
     internal class Sentence
     {
         // sentences are linked with each other by the linked-object 
         // thus they build a "linked list" that can easly be queried with linq
-
 
         private readonly LinkedObject<Sentence> _linkedObject;
         private List<Token> _tokens = new List<Token>();
