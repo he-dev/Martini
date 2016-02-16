@@ -8,13 +8,14 @@ namespace Martini
 {
     [DebuggerDisplay("Name = {Name}")]
     public class IniSection : IniElement
-    {        
+    {
         internal IniSection(Sentence section, IniFile iniFile) : base(section, iniFile) { }
 
-        public IEnumerable<IniProperty> this[string name] =>
+        public IniProperty this[string name] =>
             Sentence.Contents().Properties()
                 .Where(x => x.PropertyToken() == name)
-                .Select(x => new IniProperty(x, IniFile));
+                .Select(x => new IniProperty(x, IniFile))
+                .SingleOrDefault();
 
         public string Name => Sentence.Tokens.SectionToken();
 
@@ -24,28 +25,75 @@ namespace Martini
 
         public IniProperty AddProperty(string name, string value)
         {
-            var property = PropertyFactory.CreateProperty(name, value);
+            var properties = Properties.Where(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase)).ToList();
+            var propertyExists = Properties.Any();
 
-            var iniProperty = new IniProperty(property, IniFile);
-            Sentence.Contents().Properties().Last().Next = iniProperty.Sentence;
+            var addProperty = new Func<IniProperty>(() =>
+            {
+                var property = PropertyFactory.CreateProperty(name, value);
+                var iniProperty = new IniProperty(property, IniFile);
 
-            
-            //if (!allowDuplicateProperties)
-            //{
-            //    var propertyExists = properties.Any(t => t.Tokens.PropertyToken() == name);
-            //    if (propertyExists)
-            //    {
-            //        throw new PropertyExistsException
-            //        {
-            //            Section = Name,
-            //            Properety = name
-            //        };
-            //    }
-            //}
+                var contents = Sentence.Contents().ToList();
+                var hasContents = contents.Any();
+                if (!hasContents)
+                {
+                    Sentence.Next = iniProperty.Sentence;
+                }
+                else
+                {
+                    contents.Last().Next = iniProperty.Sentence;
+                }
+                return iniProperty;
+            });
 
-            return iniProperty;
+            if (IniFile.DuplicatePropertyHandling == DuplicatePropertyHandling.Disallow)
+            {
+                if (propertyExists)
+                {
+                    throw new DuplicatePropertiesException();
+                }
+                return addProperty();
+            }
+
+            if (IniFile.DuplicatePropertyHandling == DuplicatePropertyHandling.Allow)
+            {
+                return addProperty();
+            }
+
+            if (IniFile.DuplicatePropertyHandling == DuplicatePropertyHandling.KeepFirst)
+            {
+                if (propertyExists)
+                {
+                    return properties.Single();
+                }
+                return addProperty();
+            }
+
+            if (IniFile.DuplicatePropertyHandling == DuplicatePropertyHandling.KeepLast)
+            {
+                if (propertyExists)
+                {
+                    var property = properties.Single();
+                    property.Value = value;
+                    return property;
+                }
+                return addProperty();
+            }
+
+            if (IniFile.DuplicatePropertyHandling == DuplicatePropertyHandling.Rename)
+            {
+                if (propertyExists)
+                {
+                    name += properties.Count + 1;
+                    return addProperty();
+                }
+                return addProperty();
+            }
+
+            // the compiler will complain without it
+            return null;
         }
-       
+
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
             result = this[binder.Name];
@@ -54,7 +102,7 @@ namespace Martini
 
         public static bool operator ==(IniSection iniSection, string name)
         {
-            return 
+            return
                 !ReferenceEquals(iniSection, null) &&
                 !string.IsNullOrEmpty(name) &&
                 iniSection.Name.Equals(name, StringComparison.OrdinalIgnoreCase);
@@ -67,7 +115,7 @@ namespace Martini
 
         protected bool Equals(IniSection other)
         {
-            return 
+            return
                 !ReferenceEquals(other, null) &&
                 Name.Equals(other.Name, StringComparison.OrdinalIgnoreCase);
         }

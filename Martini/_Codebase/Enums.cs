@@ -4,15 +4,15 @@ namespace Martini
 {
     public enum DuplicateSectionHandling
     {
-        Allow,
         Disallow,
+        Allow,
         Merge
     }
 
     public enum DuplicatePropertyHandling
     {
-        Allow,
         Disallow,
+        Allow,
         KeepFirst,
         KeepLast,
         Rename

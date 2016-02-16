@@ -44,7 +44,7 @@ namespace Martini
 
         public static IEnumerable<Sentence> Contents(this Sentence sentence)
         {
-            var sectionContents = sentence.After.Skip(1).TakeWhile(x => x.Type != SentenceType.Section).ToList();
+            var sectionContents = sentence.After.Skip(1).TakeWhile(x => x.Type != SentenceType.Section);
             return sectionContents;
         }
 
