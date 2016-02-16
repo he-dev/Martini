@@ -24,26 +24,19 @@ namespace Martini
 
             //foo.Next.Remove();
 
-            dynamic iniFile1 = IniFile.From("test.ini", new IniParserSettings
+            dynamic iniFile1 = IniFile.From("test.ini", new IniSettings
             {
                 DuplicateSectionHandling = DuplicateSectionHandling.Merge,
                 DuplicatePropertyHandling = DuplicatePropertyHandling.KeepLast
             });
             iniFile1.Save("test2.ini");
 
-            var serv1 = ((IEnumerable<IniProperty>)iniFile1.database.server).First();
+            var serv1 = iniFile1.database.server;
 
             var iniFile2 = IniFile.From("test.ini");
-            var serv2 = iniFile2["database"]["server"].First();
+            var serv2 = iniFile2["database"]["server"];
             var section = iniFile2.AddSection("downloads");
         }
-    }
-
-    public class IniParserSettings
-    {
-        public DuplicateSectionHandling DuplicateSectionHandling { get; set; } = DuplicateSectionHandling.Allow;
-        public DuplicatePropertyHandling DuplicatePropertyHandling { get; set; } = DuplicatePropertyHandling.Allow;
-        public InvalidLineHandling InvalidLineHandling { get; set; } = InvalidLineHandling.Throw;
     }
 
 

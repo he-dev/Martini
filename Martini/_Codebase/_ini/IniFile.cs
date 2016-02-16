@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
@@ -9,27 +10,31 @@ namespace Martini
     {
         private readonly Sentence _firstSentence;
 
-        internal IniFile(Sentence firsSentence)
+        public IniFile(IniSettings settings = null)
         {
-            _firstSentence = firsSentence;
+            DuplicateSectionHandling = settings?.DuplicateSectionHandling ?? DuplicateSectionHandling.Disallow;
+            DuplicatePropertyHandling = settings?.DuplicatePropertyHandling ?? DuplicatePropertyHandling.Disallow;
         }
 
-        public IniSection this[string name]
+        internal IniFile(Sentence firstSentence, IniSettings settings = null) : this(settings)
         {
-            get
-            {
-                var sentence =
-                    _firstSentence.After.Sections()
-                        .SingleOrDefault(x => Extensions.SectionToken((Sentence) x) == name);
-
-                var section = sentence == null ? null : new IniSection(sentence);
-                return section;
-            }
+            _firstSentence = firstSentence;
         }
 
-        public IEnumerable<IniSection> Sections => _firstSentence.After.Sections().Select(x => new IniSection(x));
+        public DuplicateSectionHandling DuplicateSectionHandling { get; }
 
-        public static IniFile From(string fileName, IniParserSettings settings = null)
+        public DuplicatePropertyHandling DuplicatePropertyHandling { get; }
+
+        public IniSection this[string name] => _firstSentence.After.Sections().Where(x => x.SectionToken() == name).Select(x => new IniSection(x, this)).SingleOrDefault();
+
+        public IEnumerable<IniSection> Sections => _firstSentence.After.Sections().Select(x => new IniSection(x, this));
+
+        public bool ContainsSection(string name)
+        {
+            return this[name] != null;
+        }
+
+        public static IniFile From(string fileName, IniSettings settings = null)
         {
             var iniText = File.ReadAllText(fileName);
             var iniFile = Parser.Parse(iniText, settings);
@@ -43,16 +48,46 @@ namespace Martini
 
         public IniSection AddSection(string name)
         {
-            var section = SectionFactory.CreateSection(name);
-            var lastSentence = _firstSentence.After.Last();
-            lastSentence.Next = section;
-            return new IniSection(section);
+            var sections = Sections.Where(x => x == name).ToList();
+            var sectionExists = sections.Any();
+
+            var addSection = new Func<IniSection>(() =>
+            {
+                var section = SectionFactory.CreateSection(name);
+                _firstSentence.After.Last().Next = section;
+                return new IniSection(section, this);
+            });
+
+            if (DuplicateSectionHandling == DuplicateSectionHandling.Disallow)
+            {
+                if (sectionExists)
+                {
+                    throw new DuplicateSectionsException();
+                }
+                return addSection();
+            }
+
+            if (DuplicateSectionHandling == DuplicateSectionHandling.Allow)
+            {
+                return addSection();
+            }
+
+            if (DuplicateSectionHandling == DuplicateSectionHandling.Merge)
+            {
+                if (sectionExists)
+                {
+                    return sections.Single();
+                }
+                return addSection();
+            }
+
+            return null;
         }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
             result = this[binder.Name];
-            return (result != null);
+            return true; //(result != null);
         }
     }
 }

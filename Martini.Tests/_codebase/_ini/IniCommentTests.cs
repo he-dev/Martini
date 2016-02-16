@@ -10,7 +10,7 @@ namespace Martini.Tests.IniCommentTests
         public void ctorTests()
         {
             var s = CommentFactory.CreateComment("foo");
-            var c = new IniComment(s);
+            var c = new IniComment(s, null);
 
             Assert.AreEqual("foo", c.Text);
             c.Text = "bar";

@@ -10,7 +10,7 @@ namespace Martini.Tests.IniPropertyTests
         public void ctorTests()
         {
             var s = PropertyFactory.CreateProperty("foo", "bar");
-            var p = new IniProperty(s);
+            var p = new IniProperty(s, null);
 
             Assert.AreEqual("foo", p.Name);
             Assert.AreEqual("bar", p.Value);

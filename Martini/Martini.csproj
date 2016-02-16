@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="_Codebase\Collections\AutoKeyDictionary.cs" />
+    <Compile Include="_Codebase\Collections\DynamicDictionary.cs" />
     <Compile Include="_Codebase\Collections\BiDictionary.cs" />
     <Compile Include="_Codebase\Collections\KeyPair.cs" />
     <Compile Include="_Codebase\Collections\LinkedObject.cs" />
@@ -65,6 +66,7 @@
     <Compile Include="_Codebase\_ini\IniComment.cs" />
     <Compile Include="_Codebase\_ini\IniElement.cs" />
     <Compile Include="_Codebase\_ini\IniFile.cs" />
+    <Compile Include="_Codebase\_ini\IniSettings.cs" />
     <Compile Include="_Codebase\_ini\IniProperty.cs" />
     <Compile Include="_Codebase\_ini\IniSection.cs" />
   </ItemGroup>

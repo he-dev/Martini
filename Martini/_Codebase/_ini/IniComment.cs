@@ -5,7 +5,7 @@ namespace Martini
     [DebuggerDisplay("Text = {Text}")]
     public class IniComment : IniElement
     {
-        internal IniComment(Sentence comment) : base(comment) { }
+        internal IniComment(Sentence comment, IniFile iniFile) : base(comment, iniFile) { }
 
         public string Text
         {

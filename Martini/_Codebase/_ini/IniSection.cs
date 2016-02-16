@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
@@ -7,48 +8,81 @@ namespace Martini
 {
     [DebuggerDisplay("Name = {Name}")]
     public class IniSection : IniElement
-    {
-        internal IniSection(Sentence section) : base(section) { }
+    {        
+        internal IniSection(Sentence section, IniFile iniFile) : base(section, iniFile) { }
 
         public IEnumerable<IniProperty> this[string name] =>
             Sentence.Contents().Properties()
                 .Where(x => x.PropertyToken() == name)
-                .Select(x => new IniProperty(x));
-
-        public List<IniComment> Comments => Sentence.Comments().Select(x => new IniComment(x)).ToList();
+                .Select(x => new IniProperty(x, IniFile));
 
         public string Name => Sentence.Tokens.SectionToken();
 
-        public IEnumerable<IniProperty> Properties => Sentence.Contents().Properties().Select(x => new IniProperty(x));
+        public List<IniComment> Comments => Sentence.Comments().Select(x => new IniComment(x, IniFile)).ToList();
 
-        public IniProperty AddProperty(string name, string value, bool allowDuplicateProperties = false)
+        public IEnumerable<IniProperty> Properties => Sentence.Contents().Properties().Select(x => new IniProperty(x, IniFile));
+
+        public IniProperty AddProperty(string name, string value)
         {
-            var newProperty = PropertyFactory.CreateProperty(name, value);
+            var property = PropertyFactory.CreateProperty(name, value);
 
-            var properties = Sentence.Contents().Properties().ToList();
+            var iniProperty = new IniProperty(property, IniFile);
+            Sentence.Contents().Properties().Last().Next = iniProperty.Sentence;
 
-            if (!allowDuplicateProperties)
-            {
-                var propertyExists = properties.Any(t => t.Tokens.PropertyToken() == name);
-                if (propertyExists)
-                {
-                    throw new PropertyExistsException
-                    {
-                        Section = Name,
-                        Properety = name
-                    };
-                }
-            }
+            
+            //if (!allowDuplicateProperties)
+            //{
+            //    var propertyExists = properties.Any(t => t.Tokens.PropertyToken() == name);
+            //    if (propertyExists)
+            //    {
+            //        throw new PropertyExistsException
+            //        {
+            //            Section = Name,
+            //            Properety = name
+            //        };
+            //    }
+            //}
 
-            properties.Last().Next = newProperty;
-
-            return new IniProperty(newProperty);
+            return iniProperty;
         }
-
+       
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
             result = this[binder.Name];
-            return ((IEnumerable<IniProperty>)result).Any();
+            return result != null;
+        }
+
+        public static bool operator ==(IniSection iniSection, string name)
+        {
+            return 
+                !ReferenceEquals(iniSection, null) &&
+                !string.IsNullOrEmpty(name) &&
+                iniSection.Name.Equals(name, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static bool operator !=(IniSection iniSection, string name)
+        {
+            return !(iniSection == name);
+        }
+
+        protected bool Equals(IniSection other)
+        {
+            return 
+                !ReferenceEquals(other, null) &&
+                Name.Equals(other.Name, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((IniSection)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return Name.GetHashCode();
         }
     }
 }

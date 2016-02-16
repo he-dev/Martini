@@ -6,7 +6,7 @@ namespace Martini
 {
     internal class Parser
     {
-        public static IniFile Parse(string ini, IniParserSettings settings)
+        public static IniFile Parse(string ini, IniSettings settings)
         {
             var firstSentence = Tokenizer.Tokenize(ini);
             DetermineSentenceType(firstSentence);
@@ -14,7 +14,7 @@ namespace Martini
             HandleDuplicateSections(firstSentence, settings.DuplicateSectionHandling);
             HandleDuplicateProperties(firstSentence, settings.DuplicatePropertyHandling);
 
-            var iniFile = new IniFile(firstSentence);
+            var iniFile = new IniFile(firstSentence, settings);
             return iniFile;
         }
 
@@ -80,15 +80,7 @@ namespace Martini
                 return;
             }
 
-            var duplicateSectionsGroups =
-                firstSentence.After.Sections()
-                    .GroupBy(x => (string)x.SectionToken(), (name, sections) => new
-                    {
-                        name,
-                        sections
-                    })
-                    .Where(x => x.sections.Count() > 1)
-                    .ToList();
+            var duplicateSectionsGroups = firstSentence.DuplicateSectionGroups();
 
             if (!duplicateSectionsGroups.Any())
             {
@@ -102,10 +94,10 @@ namespace Martini
 
             if (duplicateSectionHandling == DuplicateSectionHandling.Merge)
             {
-                foreach (var duplicateSectionsGroup in duplicateSectionsGroups)
+                foreach (var duplicateSecionGroup in duplicateSectionsGroups)
                 {
-                    var baseSection = duplicateSectionsGroup.sections.First();
-                    var mergeSections = duplicateSectionsGroup.sections.Skip(1);
+                    var baseSection = duplicateSecionGroup.First();
+                    var mergeSections = duplicateSecionGroup.Skip(1);
                     foreach (var mergeSection in mergeSections)
                     {
                         var sectionContent = mergeSection.Contents().ToList();

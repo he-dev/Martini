@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Martini.Collections;
 
 namespace Martini
 {
@@ -54,6 +56,33 @@ namespace Martini
         public static IEnumerable<Sentence> Properties(this IEnumerable<Sentence> sentences)
         {
             return sentences.Where(x => x.Type == SentenceType.Property);
+        }
+
+        public static DynamicDictionary<TKey, TValue> ToDynamicDictionary<TSource, TKey, TValue>(
+            this IEnumerable<TSource> source, string keyName, string valueName, Func<TSource, TKey> keySelector, Func<TSource, TValue> elementSelector)
+        {
+            var dynamicDictionary = new DynamicDictionary<TKey, TValue>(keyName, valueName);
+
+            foreach (var item in source)
+            {
+                dynamicDictionary.Add(keySelector(item), elementSelector(item));
+            }
+
+            return dynamicDictionary;
+        }
+
+        public static List<List<Sentence>> DuplicateSectionGroups(this Sentence sentence)
+        {
+            if (sentence.Previous != null) { throw new ArgumentException("Sentence must be first."); }
+            if (!sentence.After.Any()) { return new List<List<Sentence>>(); }
+
+            var duplicateSecions =
+                sentence.After.Sections()
+                .GroupBy(x => (string)x.SectionToken(), (name, sentences) => sentences.ToList())
+                .Where(x => x.Count > 1)
+                .ToList();
+
+            return duplicateSecions;
         }
     }
 }
