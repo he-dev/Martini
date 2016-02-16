@@ -1,4 +1,4 @@
-# Martini v1.0.0-beta1
+# Martini v1.0.0-beta2
 Advanced C# INI Parser with LINQ support.
 
 ---
@@ -13,8 +13,8 @@ Advanced C# INI Parser with LINQ support.
 - Creating new properties
 - Creating new comments _(planned)_
 - Retrieving sections and properties
-- Dynamic sections and properties retrieval _(as long as their names meed `C#` identifier rules)_
-- Indexed secitons and properties retrieval _(supports any names)_
+- Dynamic sections and properties retrieval _(as long as their names meet `C#` identifier rules)_
+- Indexed sections and properties retrieval _(supports any names)_
 - Duplicate sections handling
     - **Allow** - Duplicate sections will be read as they are
     - **Disallow** - Duplicate sections will throw an exception
@@ -62,13 +62,13 @@ Dynamic sections a properties retrieval:
 
 ```c#
 dynamic iniFile = IniFile.From("test.ini");
-var server = iniFile1.database.server; // as IEnumerable<IniProperty>
+var server = iniFile1.database.server; // = 192.0.2.68
 ```
 
 Indexed section and properties retrieval:
 
 ```c#
 var iniFile = IniFile.From("test.ini");
-var server = iniFile["database"]["server"].First();
+var server = iniFile["database"]["server"]; // = 192.0.2.68
 var section = iniFile.AddSection("downloads");
 ```
