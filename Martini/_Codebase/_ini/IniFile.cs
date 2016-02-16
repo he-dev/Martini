@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using Martini.Collections;
 
 namespace Martini
 {
-    internal class IniFile : DynamicObject
+    public class IniFile : DynamicObject
     {
         private readonly Sentence _firstSentence;
 
@@ -35,6 +36,8 @@ namespace Martini
         public PropertyValueDelimiter PropertyValueDelimiter { get; }
 
         public CommentIndicator CommentIndicator { get; }
+
+        internal BiDictionary<TokenType, char> Delimiters { get; }
 
         public IniSection this[string name] => _firstSentence.After.Sections().Where(x => x.SectionToken() == name).Select(x => new IniSection(x, this)).SingleOrDefault();
 

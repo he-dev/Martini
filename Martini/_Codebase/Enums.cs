@@ -72,25 +72,25 @@ namespace Martini
         /// <summary>
         /// Brackets []
         /// </summary>
-        [SectionDelimiter(Left = "[", Right = "]")]
+        [SectionDelimiter(Left = '[', Right = ']')]
         SquareBrackets,
 
         /// <summary>
         /// Parentheses {}
         /// </summary>
-        [SectionDelimiter(Left = "{", Right = "}")]
+        [SectionDelimiter(Left = '{', Right = '}')]
         RoundBrackets,
 
         /// <summary>
         /// Braces ()
         /// </summary>
-        [SectionDelimiter(Left = "(", Right = ")")]
+        [SectionDelimiter(Left = '(', Right = ')')]
         CurlyBrackets,
 
         /// <summary>
         /// Chevrons 
         /// </summary>
-        [SectionDelimiter(Left = "<", Right = ">")]
+        [SectionDelimiter(Left = '<', Right = '>')]
         AngleBrrackets
     }
 
@@ -99,13 +99,13 @@ namespace Martini
         /// <summary>
         /// =
         /// </summary>
-        [PropertyValueDelimiter(Deimiter = "=")]
+        [PropertyValueDelimiter(Deimiter = '=')]
         EqualSign,
 
         /// <summary>
         /// :
         /// </summary>
-        [PropertyValueDelimiter(Deimiter = ";")]
+        [PropertyValueDelimiter(Deimiter = ';')]
         Colon
     }
 
@@ -114,13 +114,13 @@ namespace Martini
         /// <summary>
         /// ;
         /// </summary>
-        [CommentIndicator(Deimiter = ";")]
+        [CommentIndicator(Deimiter = ';')]
         Semicolon,
 
         /// <summary>
         /// #
         /// </summary>
-        [CommentIndicator(Deimiter = "#")]
+        [CommentIndicator(Deimiter = '#')]
         NumberSign
     }
 }

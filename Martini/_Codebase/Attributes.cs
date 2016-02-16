@@ -9,19 +9,19 @@ namespace Martini
     [AttributeUsage(AttributeTargets.Field)]
     public class SectionDelimiterAttribute : Attribute
     {
-        public string Left { get; set; }
-        public string Right { get; set; }
+        public char Left { get; set; }
+        public char Right { get; set; }
     }
 
     [AttributeUsage(AttributeTargets.Field)]
     public class PropertyValueDelimiterAttribute : Attribute
     {
-        public string Deimiter { get; set; }
+        public char Deimiter { get; set; }
     }
 
     [AttributeUsage(AttributeTargets.Field)]
     public class CommentIndicatorAttribute : Attribute
     {
-        public string Deimiter { get; set; }
+        public char Deimiter { get; set; }
     }
 }

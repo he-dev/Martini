@@ -84,5 +84,12 @@ namespace Martini
 
             return duplicateSecions;
         }
+
+        public static TAttribute Attribute<TAttribute>(this Enum value) where TAttribute : Attribute
+        {
+            var memberInfo = value.GetType().GetMember(value.ToString()).Single();
+            var attributes = memberInfo.GetCustomAttributes(value.GetType(), false);
+            return (TAttribute)attributes.SingleOrDefault();
+        }
     }
 }
