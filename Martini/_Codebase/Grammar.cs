@@ -5,6 +5,11 @@ namespace Martini
 {
     internal class Grammar
     {
+        public Grammar(IniSettings settings)
+        {
+            
+        }
+
         // defines each type of sentence and the possible tokens
         public static readonly AutoKeyDictionary<SentenceType, SentenceDefinition> SentenceDefinitions =
             new AutoKeyDictionary<SentenceType, SentenceDefinition>(x => x.SentenceType)

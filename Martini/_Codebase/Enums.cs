@@ -1,4 +1,5 @@
 using System;
+using System.Security.AccessControl;
 
 namespace Martini
 {
@@ -26,7 +27,7 @@ namespace Martini
 
     public enum InvalidLineHandling
     {
-        Throw,
+        Disallow,
         Ignore,
         Keep
     }
@@ -64,5 +65,62 @@ namespace Martini
         Comment,
         QuotationMark,
         EscapeSequence,
+    }
+
+    public enum SectionDelimiter
+    {
+        /// <summary>
+        /// Brackets []
+        /// </summary>
+        [SectionDelimiter(Left = "[", Right = "]")]
+        SquareBrackets,
+
+        /// <summary>
+        /// Parentheses {}
+        /// </summary>
+        [SectionDelimiter(Left = "{", Right = "}")]
+        RoundBrackets,
+
+        /// <summary>
+        /// Braces ()
+        /// </summary>
+        [SectionDelimiter(Left = "(", Right = ")")]
+        CurlyBrackets,
+
+        /// <summary>
+        /// Chevrons 
+        /// </summary>
+        [SectionDelimiter(Left = "<", Right = ">")]
+        AngleBrrackets
+    }
+
+    public enum PropertyValueDelimiter
+    {
+        /// <summary>
+        /// =
+        /// </summary>
+        [PropertyValueDelimiter(Deimiter = "=")]
+        EqualSign,
+
+        /// <summary>
+        /// :
+        /// </summary>
+        [PropertyValueDelimiter(Deimiter = ";")]
+        Colon
+    }
+
+    public enum CommentIndicator
+    {
+        /// <summary>
+        /// ;
+        /// </summary>
+        [CommentIndicator(Deimiter = ";")]
+        Semicolon,
+
+        /// <summary>
+        /// #
+        /// </summary>
+        [CommentIndicator(Deimiter = "#")]
+        NumberSign
     }
 }

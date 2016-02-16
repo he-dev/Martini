@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="_Codebase\Attributes.cs" />
     <Compile Include="_Codebase\Collections\AutoKeyDictionary.cs" />
     <Compile Include="_Codebase\Collections\DynamicDictionary.cs" />
     <Compile Include="_Codebase\Collections\BiDictionary.cs" />

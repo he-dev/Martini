@@ -12,8 +12,13 @@ namespace Martini
 
         public IniFile(IniSettings settings = null)
         {
-            DuplicateSectionHandling = settings?.DuplicateSectionHandling ?? DuplicateSectionHandling.Disallow;
-            DuplicatePropertyHandling = settings?.DuplicatePropertyHandling ?? DuplicatePropertyHandling.Disallow;
+            settings = settings ?? new IniSettings();
+
+            DuplicateSectionHandling = settings.DuplicateSectionHandling;
+            DuplicatePropertyHandling = settings.DuplicatePropertyHandling;
+            SectionDelimiter = settings.SectionDelimiter;
+            PropertyValueDelimiter = settings.PropertyValueDelimiter;
+            CommentIndicator = settings.CommentIndicator;
         }
 
         internal IniFile(Sentence firstSentence, IniSettings settings = null) : this(settings)
@@ -24,6 +29,12 @@ namespace Martini
         public DuplicateSectionHandling DuplicateSectionHandling { get; }
 
         public DuplicatePropertyHandling DuplicatePropertyHandling { get; }
+
+        public SectionDelimiter SectionDelimiter { get; }
+
+        public PropertyValueDelimiter PropertyValueDelimiter { get; }
+
+        public CommentIndicator CommentIndicator { get; }
 
         public IniSection this[string name] => _firstSentence.After.Sections().Where(x => x.SectionToken() == name).Select(x => new IniSection(x, this)).SingleOrDefault();
 
