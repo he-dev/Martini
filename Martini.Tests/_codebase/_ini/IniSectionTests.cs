@@ -120,11 +120,40 @@ namespace Martini.Tests.IniSectionTests
         public void AddPropertyTests()
         {
             var sentence = SectionFactory.CreateSection("foo", Grammar.DefaultDelimiters);
+            var section = new IniSection(sentence, new IniFile());
+
+            section.AddComment("baz");
+            section.AddComment("qux");
+
+            Assert.IsTrue(section.Comments.Count() == 2);
+            Assert.IsTrue(section.Comments.ElementAt(0) == "baz");
+            Assert.IsTrue(section.Comments.ElementAt(1) == "qux");
+        }
+    }
+
+    [TestClass]
+    public class Render
+    {
+        [TestMethod]
+        public void RentersTextWithFormattingOptions()
+        {
+            var sentence = SectionFactory.CreateSection("foo", Grammar.DefaultDelimiters);
             var section = new IniSection(sentence, null);
 
-            Assert.AreEqual("foo", section.Name);
-            Assert.IsTrue(!section.Comments.Any());
-            Assert.IsTrue(!section.Properties.Any());
+            Assert.AreEqual("[foo]", section.Render(FormattingOptions.None));
+        }
+
+        [TestMethod]
+        public void RentersTextWithFormattingOptionsAndVariousDelimiters()
+        {
+            var settings = new IniSettings
+            {
+                SectionDelimiters = SectionDelimiter.AngleBrackets
+            };
+            var sentence = SectionFactory.CreateSection("foo", settings.Delimiters);
+            var section = new IniSection(sentence, null);
+
+            Assert.AreEqual("<foo>", section.Render(FormattingOptions.None));
         }
     }
 }

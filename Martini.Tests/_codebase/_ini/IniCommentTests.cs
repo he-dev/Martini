@@ -22,7 +22,7 @@ namespace Martini.Tests.IniCommentTests
     public class Render
     {
         [TestMethod]
-        public void RendersTextWithOptions()
+        public void RendersTextWithFormattingOptions()
         {
             var s = CommentFactory.CreateComment("foo", Grammar.DefaultDelimiters);
             var c = new IniComment(s, null);
@@ -32,7 +32,7 @@ namespace Martini.Tests.IniCommentTests
         }
 
         [TestMethod]
-        public void RendersTextWithCustomCommentIndicator()
+        public void RendersTextWithFormattingOptionsAndVariousCommentIndicators()
         {
             var settings = new IniSettings
             {

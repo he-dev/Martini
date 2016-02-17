@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
+using System.Text;
 
 namespace Martini
 {
@@ -19,9 +20,16 @@ namespace Martini
 
         public string Name => Sentence.Tokens.SectionToken();
 
-        public List<IniComment> Comments => Sentence.Comments().Select(x => new IniComment(x, IniFile)).ToList();
+        public IEnumerable<IniComment> Comments => Sentence.Comments().Select(x => new IniComment(x, IniFile));
 
         public IEnumerable<IniProperty> Properties => Sentence.Contents().Properties().Select(x => new IniProperty(x, IniFile));
+
+        public IniComment AddComment(string text)
+        {
+            var comment = CommentFactory.CreateComment(text, IniFile.Delimiters);
+            Sentence.Previous = comment;
+            return new IniComment(comment, IniFile);
+        }
 
         public IniProperty AddProperty(string name, string value)
         {
@@ -135,7 +143,14 @@ namespace Martini
 
         internal override string Render(FormattingOptions formattingOptions)
         {
-            throw new NotImplementedException();
+            var text = new StringBuilder();
+
+            text
+                .Append(Sentence.Tokens[0])
+                .Append(Sentence.Tokens[1])
+                .Append(Sentence.Tokens[2]);
+
+            return text.ToString();
         }
     }
 }

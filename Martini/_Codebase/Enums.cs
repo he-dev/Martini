@@ -95,7 +95,7 @@ namespace Martini
         /// Chevrons 
         /// </summary>
         [SectionDelimiter(Left = '<', Right = '>')]
-        AngleBrrackets
+        AngleBrackets
     }
 
     public enum PropertyValueDelimiter

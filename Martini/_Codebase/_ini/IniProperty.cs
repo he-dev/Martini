@@ -11,9 +11,9 @@ namespace Martini
     {
         internal IniProperty(Sentence property, IniFile iniFile) : base(property, iniFile) { }
 
-        public List<IniComment> Comments
+        public IEnumerable<IniComment> Comments
         {
-            get { return Sentence.Comments().Select(x => new IniComment(x, IniFile)).ToList(); }
+            get { return Sentence.Comments().Select(x => new IniComment(x, IniFile)); }
         }
 
         public string Name => Sentence.Tokens.PropertyToken();
@@ -22,6 +22,13 @@ namespace Martini
         {
             get { return Sentence.Tokens.ValueToken(); }
             set { Sentence.Tokens.ValueToken().Value = value; }
+        }
+
+        public IniComment AddComment(string text)
+        {
+            var comment = CommentFactory.CreateComment(text, IniFile.Delimiters);
+            Sentence.Previous = comment;
+            return new IniComment(comment, IniFile);
         }
 
         internal override string Render(FormattingOptions formattingOptions)

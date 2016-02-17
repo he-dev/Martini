@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Text;
 
@@ -24,6 +25,18 @@ namespace Martini
             text.Append(Sentence.Tokens.CommentToken());
 
             return text.ToString();
+        }
+
+        public static bool operator ==(IniComment iniComment, string text)
+        {
+            return
+                !ReferenceEquals(iniComment, null) &&
+                iniComment.Text.Equals(text, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static bool operator !=(IniComment iniComment, string text)
+        {
+            return !(iniComment == text);
         }
     }
 }

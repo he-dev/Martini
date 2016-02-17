@@ -8,7 +8,7 @@ namespace Martini
         {
             var section = new Sentence
             {
-                Type = SentenceType.Section,
+                Type = SentenceType.Comment,
                 Tokens = new List<Token>
                 {
                     new Token(TokenType.CommentIndicator, delimiters.TokenTypes[TokenType.CommentIndicator]),
