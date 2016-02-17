@@ -27,9 +27,19 @@ namespace Martini
             return tokens.Single(t => t.Type == TokenType.Property);
         }
 
+        public static Token PropertyValueDelimiterToken(this IEnumerable<Token> tokens)
+        {
+            return tokens.Single(t => t.Type == TokenType.ProperetyValueDelimiter);
+        }
+
         public static Token ValueToken(this IEnumerable<Token> tokens)
         {
             return tokens.Single(t => t.Type == TokenType.Value);
+        }
+
+        public static Token CommentIndicaotrToken(this IEnumerable<Token> tokens)
+        {
+            return tokens.Single(t => t.Type == TokenType.CommentIndicator);
         }
 
         public static Token CommentToken(this IEnumerable<Token> tokens)

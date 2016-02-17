@@ -132,5 +132,10 @@ namespace Martini
         {
             return Name.GetHashCode();
         }
+
+        internal override string Render(FormattingOptions formattingOptions)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

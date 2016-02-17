@@ -98,20 +98,18 @@ namespace Martini.Tests.IniSectionTests
         [TestMethod]
         public void RenamesDuplicateProperty()
         {
+            var sentence = SectionFactory.CreateSection("foo", Grammar.DefaultDelimiters);
+            var section = new IniSection(sentence, new IniFile(sentence, new IniSettings
             {
-                var sentence = SectionFactory.CreateSection("foo", Grammar.DefaultDelimiters);
-                var section = new IniSection(sentence, new IniFile(sentence, new IniSettings
-                {
-                    DuplicatePropertyHandling = DuplicatePropertyHandling.Rename
-                }));
+                DuplicatePropertyHandling = DuplicatePropertyHandling.Rename
+            }));
 
-                section.AddProperty("bar", "baz");
-                section.AddProperty("bar", "qux");
+            section.AddProperty("bar", "baz");
+            section.AddProperty("bar", "qux");
 
-                Assert.IsTrue(section.Properties.Count() == 2);
-                Assert.AreEqual("baz", section["bar"].Value);
-                Assert.AreEqual("qux", section["bar2"].Value);
-            }
+            Assert.IsTrue(section.Properties.Count() == 2);
+            Assert.AreEqual("baz", section["bar"].Value);
+            Assert.AreEqual("qux", section["bar2"].Value);
         }
     }
 

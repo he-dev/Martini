@@ -33,10 +33,14 @@ namespace Martini
     }
 
     [Flags]
-    public enum Formattings
+    public enum FormattingOptions
     {
         None,
-        EmptyLineBeforeSection,
+        BlankLineBeforeSection = 1,
+        SpaceAfterCommentIndicator = 2,
+        SpaceBeforePropertyValueDelimiter = 4,
+        SpaceAfterPropertyValueDelimiter = 8,
+        QuoteValuesWithSpaces = 16,
     }
 
     internal enum SentenceType

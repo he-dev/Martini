@@ -28,7 +28,7 @@ namespace Martini
 
             for (var i = 0; i < lines.Length; i++)
             {
-                var line = lines[i];
+                var line = lines[i].TrimStart();
 
                 var tokens = TokenizeLine(line, delimiters);
                 appendSentence(new Sentence
@@ -91,8 +91,8 @@ namespace Martini
                 }
 
                 // if equal sign already found then ignore the others
-                var ignoreInlinePropertyValueSeparator = delimiterTokens.Any(t => t.Type == TokenType.ProperetyValueDelimiter);
-                if (ignoreInlinePropertyValueSeparator)
+                var ignoreOtherPropertyValueDelimiter = delimiterTokens.Any(t => t.Type == TokenType.ProperetyValueDelimiter);
+                if (ignoreOtherPropertyValueDelimiter)
                 {
                     continue;
                 }

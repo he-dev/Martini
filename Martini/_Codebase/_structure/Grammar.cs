@@ -5,13 +5,8 @@ namespace Martini
 {
     internal class Grammar
     {
-        public Grammar(IniSettings settings)
-        {
-            
-        }
-
         // defines each type of sentence and the possible tokens
-        public static readonly AutoKeyDictionary<SentenceType, SentenceDefinition> SentenceDefinitions =
+        internal static readonly AutoKeyDictionary<SentenceType, SentenceDefinition> SentenceDefinitions =
             new AutoKeyDictionary<SentenceType, SentenceDefinition>(x => x.SentenceType)
             {
                 new SentenceDefinition
@@ -51,9 +46,9 @@ namespace Martini
                 },
             };
 
-        public static readonly string Space = ' '.ToString();
+        internal static readonly string Space = ' '.ToString();
 
-        public static readonly char Backslash = '\\';
+        internal static readonly char Backslash = '\\';
         
         internal static dynamic DefaultDelimiters => new DelimiterDictionary()
         {
