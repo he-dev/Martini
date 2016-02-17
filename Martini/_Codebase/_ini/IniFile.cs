@@ -17,9 +17,7 @@ namespace Martini
 
             DuplicateSectionHandling = settings.DuplicateSectionHandling;
             DuplicatePropertyHandling = settings.DuplicatePropertyHandling;
-            SectionDelimiter = settings.SectionDelimiter;
-            PropertyValueDelimiter = settings.PropertyValueDelimiter;
-            CommentIndicator = settings.CommentIndicator;
+            Delimiters = settings.Delimiters;
         }
 
         internal IniFile(Sentence firstSentence, IniSettings settings = null) : this(settings)
@@ -31,13 +29,7 @@ namespace Martini
 
         public DuplicatePropertyHandling DuplicatePropertyHandling { get; }
 
-        public SectionDelimiter SectionDelimiter { get; }
-
-        public PropertyValueDelimiter PropertyValueDelimiter { get; }
-
-        public CommentIndicator CommentIndicator { get; }
-
-        internal BiDictionary<TokenType, char> Delimiters { get; }
+        internal dynamic Delimiters { get; }
 
         public IniSection this[string name] => _firstSentence.After.Sections().Where(x => x.SectionToken() == name).Select(x => new IniSection(x, this)).SingleOrDefault();
 
@@ -67,7 +59,7 @@ namespace Martini
 
             var addSection = new Func<IniSection>(() =>
             {
-                var section = SectionFactory.CreateSection(name);
+                var section = SectionFactory.CreateSection(name, Delimiters);
                 _firstSentence.After.Last().Next = section;
                 return new IniSection(section, this);
             });

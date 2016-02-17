@@ -21,6 +21,8 @@ namespace Martini
 
         public SentenceType Type { get; set; } = SentenceType.Uninitialized;
 
+        //public dynamic Delimiters { get; set; }
+
         public int Line { get; set; }
 
         public List<Token> Tokens

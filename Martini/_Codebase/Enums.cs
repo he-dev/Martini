@@ -99,13 +99,13 @@ namespace Martini
         /// <summary>
         /// =
         /// </summary>
-        [PropertyValueDelimiter(Deimiter = '=')]
+        [PropertyValueDelimiter(Delimiter = '=')]
         EqualSign,
 
         /// <summary>
         /// :
         /// </summary>
-        [PropertyValueDelimiter(Deimiter = ';')]
+        [PropertyValueDelimiter(Delimiter = ';')]
         Colon
     }
 
@@ -114,13 +114,13 @@ namespace Martini
         /// <summary>
         /// ;
         /// </summary>
-        [CommentIndicator(Deimiter = ';')]
+        [CommentIndicator(Delimiter = ';')]
         Semicolon,
 
         /// <summary>
         /// #
         /// </summary>
-        [CommentIndicator(Deimiter = '#')]
+        [CommentIndicator(Delimiter = '#')]
         NumberSign
     }
 }

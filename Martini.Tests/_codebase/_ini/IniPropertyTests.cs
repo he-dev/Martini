@@ -9,7 +9,7 @@ namespace Martini.Tests.IniPropertyTests
         [TestMethod]
         public void ctorTests()
         {
-            var s = PropertyFactory.CreateProperty("foo", "bar");
+            var s = PropertyFactory.CreateProperty("foo", "bar", Grammar.DefaultDelimiters);
             var p = new IniProperty(s, null);
 
             Assert.AreEqual("foo", p.Name);

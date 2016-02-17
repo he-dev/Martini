@@ -16,12 +16,12 @@ namespace Martini
     [AttributeUsage(AttributeTargets.Field)]
     public class PropertyValueDelimiterAttribute : Attribute
     {
-        public char Deimiter { get; set; }
+        public char Delimiter { get; set; }
     }
 
     [AttributeUsage(AttributeTargets.Field)]
     public class CommentIndicatorAttribute : Attribute
     {
-        public char Deimiter { get; set; }
+        public char Delimiter { get; set; }
     }
 }

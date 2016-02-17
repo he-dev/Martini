@@ -15,18 +15,20 @@ namespace Martini
 
         public Token(char token) : this(token.ToString()) { }
 
-        // todo this grammar part has to be refactored
-        public Token(TokenType tokenType) : this((char)Grammar.DelimiterTokenTypeMap.TokenTypes[tokenType])
-        {
-            Type = tokenType;
-        }
-
         public Token(TokenType tokenType, string token) : this(token)
         {
             Type = tokenType;
         }
 
-        public string Value { get { return _token; } set { _token = value; } }
+        public Token(TokenType tokenType, char token) : this(tokenType, token.ToString())
+        {
+        }
+
+        public string Value
+        {
+            get { return _token; }
+            set { _token = value; }
+        }
 
         public Sentence Sentence { get; set; }
 

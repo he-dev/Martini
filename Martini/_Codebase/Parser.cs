@@ -8,7 +8,7 @@ namespace Martini
     {
         public static IniFile Parse(string ini, IniSettings settings)
         {
-            var firstSentence = Tokenizer.Tokenize(ini);
+            var firstSentence = Tokenizer.Tokenize(ini, settings.Delimiters);
             DetermineSentenceType(firstSentence);
 
             HandleDuplicateSections(firstSentence, settings.DuplicateSectionHandling);

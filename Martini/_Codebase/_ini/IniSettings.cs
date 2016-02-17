@@ -13,12 +13,12 @@ namespace Martini
         public PropertyValueDelimiter PropertyValueDelimiter { get; set; } = PropertyValueDelimiter.EqualSign;
         public CommentIndicator CommentIndicator { get; set; } = CommentIndicator.Semicolon;
 
-        internal BiDictionary<TokenType, char> Delimiters => new BiDictionary<TokenType, char>("TokenTypes", "Delimiters")
+        internal dynamic Delimiters => new DelimiterDictionary()
         {
             { TokenType.LeftSectionDelimiter, SectionDelimiter.Attribute<SectionDelimiterAttribute>().Left },
             { TokenType.RightSectionDelimiter, SectionDelimiter.Attribute<SectionDelimiterAttribute>().Right },
             { TokenType.ProperetyValueDelimiter, PropertyValueDelimiter.Attribute<PropertyValueDelimiterAttribute>().Delimiter },
-            { TokenType.RightSectionDelimiter, CommentIndicator.Attribute<CommentIndicatorAttribute>().Delimiter },
+            { TokenType.CommentIndicator, CommentIndicator.Attribute<CommentIndicatorAttribute>().Delimiter },
         };
     }
 }

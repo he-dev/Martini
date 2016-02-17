@@ -30,7 +30,7 @@ namespace Martini
 
             var addProperty = new Func<IniProperty>(() =>
             {
-                var property = PropertyFactory.CreateProperty(name, value);
+                var property = PropertyFactory.CreateProperty(name, value, IniFile.Delimiters);
                 var iniProperty = new IniProperty(property, IniFile);
 
                 var contents = Sentence.Contents().ToList();

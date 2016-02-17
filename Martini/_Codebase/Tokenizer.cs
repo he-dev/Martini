@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Martini;
+using Martini.Collections;
 
 namespace Martini
 {
     internal class Tokenizer
     {
-        public static Sentence Tokenize(string ini)
+        public static Sentence Tokenize(string ini, dynamic delimiters)
         {
             var lines = ini.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
@@ -29,7 +30,7 @@ namespace Martini
             {
                 var line = lines[i];
 
-                var tokens = TokenizeLine(line);
+                var tokens = TokenizeLine(line, delimiters);
                 appendSentence(new Sentence
                 {
                     Line = i,
@@ -40,7 +41,7 @@ namespace Martini
             return firstSentence;
         }
 
-        private static List<Token> TokenizeLine(string line)
+        private static List<Token> TokenizeLine(string line, dynamic delimiters)
         {
             var isEmptyLine = string.IsNullOrWhiteSpace(line);
             if (isEmptyLine)
@@ -63,14 +64,17 @@ namespace Martini
                 var c = line[i];
 
                 TokenType tokenType;
-                var isDelimiterToken = Grammar.DelimiterTokenTypeMap.Delimiters.TryGetValue(c, out tokenType);
+                var isDelimiterToken = delimiters.Delimiters.TryGetValue(c, out tokenType);
                 if (!isDelimiterToken)
                 {
                     continue;
                 }
 
-                var isEscapedDelimiterToken = i > 0 && Grammar.EscapeCharacters.Contains(c) && line[i - 1] == Grammar.Backslash;
-                if (isEscapedDelimiterToken)
+                var isEscapedToken = 
+                    Grammar.EscapableTokens.Contains(tokenType) &&
+                    i > 0 && line[i - 1] == Grammar.Backslash;
+
+                if (isEscapedToken)
                 {
                     continue;
                 }

@@ -10,7 +10,7 @@ namespace Martini.Tests.IniSectionTests
         [TestMethod]
         public void CreatesSection()
         {
-            var sentence = SectionFactory.CreateSection("foo");
+            var sentence = SectionFactory.CreateSection("foo", Grammar.DefaultDelimiters);
             var section = new IniSection(sentence, null);
 
             Assert.AreEqual("foo", section.Name);
@@ -25,7 +25,7 @@ namespace Martini.Tests.IniSectionTests
         [TestMethod]
         public void AddsProperty()
         {
-            var sentence = SectionFactory.CreateSection("foo");
+            var sentence = SectionFactory.CreateSection("foo", Grammar.DefaultDelimiters);
             var section = new IniSection(sentence, null);
 
             Assert.AreEqual("foo", section.Name);
@@ -37,7 +37,7 @@ namespace Martini.Tests.IniSectionTests
         [ExpectedException(typeof(DuplicatePropertiesException))]
         public void DisallowsDuplicateProperties()
         {
-            var sentence = SectionFactory.CreateSection("foo");
+            var sentence = SectionFactory.CreateSection("foo", Grammar.DefaultDelimiters);
             var section = new IniSection(sentence, new IniFile(sentence, new IniSettings
             {
                 DuplicatePropertyHandling = DuplicatePropertyHandling.Disallow
@@ -50,7 +50,7 @@ namespace Martini.Tests.IniSectionTests
         [TestMethod]
         public void AllowsDuplicateProperties()
         {
-            var sentence = SectionFactory.CreateSection("foo");
+            var sentence = SectionFactory.CreateSection("foo", Grammar.DefaultDelimiters);
             var section = new IniSection(sentence, new IniFile(sentence, new IniSettings
             {
                 DuplicatePropertyHandling = DuplicatePropertyHandling.Allow
@@ -66,7 +66,7 @@ namespace Martini.Tests.IniSectionTests
         [TestMethod]
         public void KeepsFirstDuplicateProperty()
         {
-            var sentence = SectionFactory.CreateSection("foo");
+            var sentence = SectionFactory.CreateSection("foo", Grammar.DefaultDelimiters);
             var section = new IniSection(sentence, new IniFile(sentence, new IniSettings
             {
                 DuplicatePropertyHandling = DuplicatePropertyHandling.KeepFirst
@@ -82,7 +82,7 @@ namespace Martini.Tests.IniSectionTests
         [TestMethod]
         public void KeepsLastDuplicateProperty()
         {
-            var sentence = SectionFactory.CreateSection("foo");
+            var sentence = SectionFactory.CreateSection("foo", Grammar.DefaultDelimiters);
             var section = new IniSection(sentence, new IniFile(sentence, new IniSettings
             {
                 DuplicatePropertyHandling = DuplicatePropertyHandling.KeepLast
@@ -99,7 +99,7 @@ namespace Martini.Tests.IniSectionTests
         public void RenamesDuplicateProperty()
         {
             {
-                var sentence = SectionFactory.CreateSection("foo");
+                var sentence = SectionFactory.CreateSection("foo", Grammar.DefaultDelimiters);
                 var section = new IniSection(sentence, new IniFile(sentence, new IniSettings
                 {
                     DuplicatePropertyHandling = DuplicatePropertyHandling.Rename
@@ -121,7 +121,7 @@ namespace Martini.Tests.IniSectionTests
         [TestMethod]
         public void AddPropertyTests()
         {
-            var sentence = SectionFactory.CreateSection("foo");
+            var sentence = SectionFactory.CreateSection("foo", Grammar.DefaultDelimiters);
             var section = new IniSection(sentence, null);
 
             Assert.AreEqual("foo", section.Name);

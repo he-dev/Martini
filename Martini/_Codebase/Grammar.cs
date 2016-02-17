@@ -54,22 +54,20 @@ namespace Martini
         public static readonly string Space = ' '.ToString();
 
         public static readonly char Backslash = '\\';
-
-        public static dynamic DelimiterTokenTypeMap = new BiDictionary<char, TokenType>("Delimiters", "TokenTypes")
+        
+        internal static dynamic DefaultDelimiters => new DelimiterDictionary()
         {
-            {'[', TokenType.LeftSectionDelimiter},
-            {']', TokenType.RightSectionDelimiter},
-            {'=', TokenType.ProperetyValueDelimiter},
-            {';', TokenType.CommentIndicator},
+            { TokenType.LeftSectionDelimiter, SectionDelimiter.SquareBrackets.Attribute<SectionDelimiterAttribute>().Left },
+            { TokenType.RightSectionDelimiter, SectionDelimiter.SquareBrackets.Attribute<SectionDelimiterAttribute>().Right },
+            { TokenType.ProperetyValueDelimiter, PropertyValueDelimiter.EqualSign.Attribute<PropertyValueDelimiterAttribute>().Delimiter },
+            { TokenType.CommentIndicator, CommentIndicator.Semicolon.Attribute<CommentIndicatorAttribute>().Delimiter },
         };
 
-        public static readonly HashSet<char> EscapeCharacters = new HashSet<char>
+        internal static readonly HashSet<TokenType> EscapableTokens = new HashSet<TokenType>
         {
-            '\\',
-            't',
-            ';',
-            '=',
-            '"'
-        };
+            TokenType.LeftSectionDelimiter,
+            TokenType.RightSectionDelimiter,
+            TokenType.ProperetyValueDelimiter,
+        };        
     }
 }

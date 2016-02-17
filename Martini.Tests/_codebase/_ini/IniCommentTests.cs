@@ -9,7 +9,7 @@ namespace Martini.Tests.IniCommentTests
         [TestMethod]
         public void ctorTests()
         {
-            var s = CommentFactory.CreateComment("foo");
+            var s = CommentFactory.CreateComment("foo", Grammar.DefaultDelimiters);
             var c = new IniComment(s, null);
 
             Assert.AreEqual("foo", c.Text);
