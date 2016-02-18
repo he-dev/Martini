@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Martini;
 using Martini.Collections;
 
@@ -41,7 +42,7 @@ namespace Martini
             return firstSentence;
         }
 
-        private static List<Token> TokenizeLine(string line, dynamic delimiters)
+        internal static List<Token> TokenizeLine(string line, dynamic delimiters)
         {
             var isEmptyLine = string.IsNullOrWhiteSpace(line);
             if (isEmptyLine)
@@ -70,29 +71,32 @@ namespace Martini
                     continue;
                 }
 
-                var isEscapedToken = 
-                    Grammar.EscapableTokens.Contains(tokenType) &&
-                    i > 0 && line[i - 1] == Grammar.Backslash;
-
+                var isEscapedToken = Grammar.EscapableTokens.Contains(tokenType) && i > 0 && line[i - 1] == Grammar.Backslash;
                 if (isEscapedToken)
                 {
                     continue;
                 }
 
+                var isInlineCommentIndicator = tokenType == TokenType.CommentIndicator && i > 0;
+                if (isInlineCommentIndicator)
+                {
+                    continue;
+                }
+
                 // ignore inline section delimiters
-                var ignoreInlineSectionDelimiter =
-                    // is inline left bracket?
-                    (tokenType == TokenType.LeftSectionDelimiter && i > 0) ||
-                    // is inline right bracket?
-                    (tokenType == TokenType.RightSectionDelimiter && i <= line.Length - 1 && delimiterTokens.Skip(1).FirstOrDefault()?.Type != TokenType.LeftSectionDelimiter);
+                var isInlineLeftSectionDelimiter = tokenType == TokenType.LeftSectionDelimiter && i > 0;
+                var isInlineRightSectionDelimiter = tokenType == TokenType.RightSectionDelimiter && i <= line.Length - 1 && delimiterTokens.Skip(1).FirstOrDefault()?.Type != TokenType.LeftSectionDelimiter;
+                var ignoreInlineSectionDelimiter = isInlineLeftSectionDelimiter || isInlineRightSectionDelimiter;
                 if (ignoreInlineSectionDelimiter)
                 {
                     continue;
                 }
 
-                // if equal sign already found then ignore the others
-                var ignoreOtherPropertyValueDelimiter = delimiterTokens.Any(t => t.Type == TokenType.ProperetyValueDelimiter);
-                if (ignoreOtherPropertyValueDelimiter)
+                // ignore property/value delimiter if first or already found
+                var startsWithPropertyValueDelimiter = tokenType == TokenType.ProperetyValueDelimiter && i == 0;
+                var containsPropertyValueDelimiter = delimiterTokens.Any(t => t.Type == TokenType.ProperetyValueDelimiter);
+                var ignorePropertyValueDelimiter = startsWithPropertyValueDelimiter || containsPropertyValueDelimiter;
+                if (ignorePropertyValueDelimiter)
                 {
                     continue;
                 }
@@ -113,8 +117,12 @@ namespace Martini
                 FromColumn = line.Length
             });
 
-            // get what's left as text tokens and put everything in a new list
+            var lineTokens = CollectText(line, delimiterTokens);
+            return lineTokens;
+        }
 
+        private static List<Token> CollectText(string line, List<Token> delimiterTokens)
+        {
             var previousToken = delimiterTokens.First();
 
             var allTokens = new List<Token>();

@@ -135,7 +135,7 @@ namespace Martini.Tests.IniSectionTests
     public class Render
     {
         [TestMethod]
-        public void RentersTextWithFormattingOptions()
+        public void RendersTextWithFormattingOptions()
         {
             var sentence = SectionFactory.CreateSection("foo", Grammar.DefaultDelimiters);
             var section = new IniSection(sentence, null);
@@ -144,7 +144,7 @@ namespace Martini.Tests.IniSectionTests
         }
 
         [TestMethod]
-        public void RentersTextWithFormattingOptionsAndVariousDelimiters()
+        public void RendersTextWithFormattingOptionsAndVariousDelimiters()
         {
             var settings = new IniSettings
             {

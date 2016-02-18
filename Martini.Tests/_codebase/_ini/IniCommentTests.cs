@@ -7,7 +7,7 @@ namespace Martini.Tests.IniCommentTests
     public class ctor
     {
         [TestMethod]
-        public void CreateComment()
+        public void CreatesComment()
         {
             var s = CommentFactory.CreateComment("foo", Grammar.DefaultDelimiters);
             var c = new IniComment(s, null);

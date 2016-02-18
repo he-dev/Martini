@@ -6,7 +6,7 @@ namespace Martini
 {
     internal class Parser
     {
-        public static IniFile Parse(string ini, IniSettings settings)
+        public static Sentence Parse(string ini, IniSettings settings)
         {
             var firstSentence = Tokenizer.Tokenize(ini, settings.Delimiters);
             DetermineSentenceType(firstSentence);
@@ -14,11 +14,10 @@ namespace Martini
             HandleDuplicateSections(firstSentence, settings.DuplicateSectionHandling);
             HandleDuplicateProperties(firstSentence, settings.DuplicatePropertyHandling);
 
-            var iniFile = new IniFile(firstSentence, settings);
-            return iniFile;
+            return firstSentence;
         }
 
-        public static void DetermineSentenceType(Sentence sentence)
+        internal static void DetermineSentenceType(Sentence sentence)
         {
             foreach (var currentSentence in sentence.After)
             {
@@ -31,10 +30,10 @@ namespace Martini
 
                 var sentenceDefinitionMatch =
                     (from sentenceDefinition in Grammar.SentenceDefinitions
-                        from tokens in sentenceDefinition.AllowedTokenTypes
-                        // compare tokens with token patterns to identify the type of sentence
-                        where tokens.SequenceEqual(currentSentence.Tokens.Select(t => t.Type))
-                        select sentenceDefinition).SingleOrDefault();
+                     from tokens in sentenceDefinition.AllowedTokenTypes
+                         // compare tokens with token patterns to identify the type of sentence
+                     where tokens.SequenceEqual(currentSentence.Tokens.Select(t => t.Type))
+                     select sentenceDefinition).SingleOrDefault();
 
                 var foundMatch = sentenceDefinitionMatch != null;
                 if (!foundMatch)
@@ -73,7 +72,7 @@ namespace Martini
             }
         }
 
-        private static void HandleDuplicateSections(Sentence firstSentence, DuplicateSectionHandling duplicateSectionHandling)
+        internal static void HandleDuplicateSections(Sentence firstSentence, DuplicateSectionHandling duplicateSectionHandling)
         {
             if (duplicateSectionHandling == DuplicateSectionHandling.Allow)
             {
@@ -112,7 +111,7 @@ namespace Martini
             }
         }
 
-        private static void HandleDuplicateProperties(Sentence firstSentence, DuplicatePropertyHandling duplicatePropertyHandling)
+        internal static void HandleDuplicateProperties(Sentence firstSentence, DuplicatePropertyHandling duplicatePropertyHandling)
         {
             if (duplicatePropertyHandling == DuplicatePropertyHandling.Allow)
             {

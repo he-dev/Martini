@@ -43,7 +43,8 @@ namespace Martini
         public static IniFile From(string fileName, IniSettings settings = null)
         {
             var iniText = File.ReadAllText(fileName);
-            var iniFile = Parser.Parse(iniText, settings);
+            var firstSentence = Parser.Parse(iniText, settings);
+            var iniFile = new IniFile(firstSentence, settings);
             return iniFile;
         }
 

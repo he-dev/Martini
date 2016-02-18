@@ -60,6 +60,7 @@ namespace Martini
 
         internal static readonly HashSet<TokenType> EscapableTokens = new HashSet<TokenType>
         {
+            TokenType.CommentIndicator,
             TokenType.LeftSectionDelimiter,
             TokenType.RightSectionDelimiter,
             TokenType.ProperetyValueDelimiter,
