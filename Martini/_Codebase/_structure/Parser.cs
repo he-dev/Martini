@@ -99,11 +99,11 @@ namespace Martini
                     var mergeSections = duplicateSecionGroup.Skip(1);
                     foreach (var mergeSection in mergeSections)
                     {
-                        var sectionContent = mergeSection.Contents().ToList();
-                        foreach (var sentence in sectionContent)
+                        var properties = mergeSection.Properties().ToList();
+                        foreach (var property in properties)
                         {
-                            var lastBaseSectionProperty = baseSection.Contents().Last();
-                            lastBaseSectionProperty.Next = sentence;
+                            var lastBaseSectionProperty = baseSection.Properties().Last();
+                            lastBaseSectionProperty.Next = property;
                         }
                         mergeSection.Remove();
                     }
@@ -122,7 +122,7 @@ namespace Martini
             foreach (var section in firstSentence.After.Sections())
             {
                 var duplicatePropertyGroups =
-                    section.Contents().Properties()
+                    section.Properties()
                         .GroupBy(x => (string)x.PropertyToken(), (name, properties) => new
                         {
                             name,

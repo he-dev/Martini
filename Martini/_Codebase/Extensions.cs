@@ -52,9 +52,19 @@ namespace Martini
             return sentences.Before.Skip(1).TakeWhile(x => x.Type == SentenceType.Comment).Reverse();
         }
 
-        public static IEnumerable<Sentence> Contents(this Sentence sentence)
+        //public static IEnumerable<Sentence> Contents(this Sentence sentence)
+        //{
+        //    var sectionContents = sentence.After.Skip(1).TakeWhile(x => x.Type != SentenceType.Section);
+        //    return sectionContents;
+        //}
+
+        public static IEnumerable<Sentence> Properties(this Sentence sentence)
         {
-            var sectionContents = sentence.After.Skip(1).TakeWhile(x => x.Type != SentenceType.Section);
+            var sectionContents = 
+                // skip current sentence
+                sentence.After.Skip(1)
+                .TakeWhile(x => x.Type != SentenceType.Section)
+                .Where(x => x.Type == SentenceType.Property);
             return sectionContents;
         }
 

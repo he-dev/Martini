@@ -13,7 +13,7 @@ namespace Martini
         internal IniSection(Sentence section, IniFile iniFile) : base(section, iniFile) { }
 
         public IniProperty this[string name] =>
-            Sentence.Contents().Properties()
+            Sentence.Properties()
                 .Where(x => x.PropertyToken() == name)
                 .Select(x => new IniProperty(x, IniFile))
                 .SingleOrDefault();
@@ -22,7 +22,7 @@ namespace Martini
 
         public IEnumerable<IniComment> Comments => Sentence.Comments().Select(x => new IniComment(x, IniFile));
 
-        public IEnumerable<IniProperty> Properties => Sentence.Contents().Properties().Select(x => new IniProperty(x, IniFile));
+        public IEnumerable<IniProperty> Properties => Sentence.Properties().Select(x => new IniProperty(x, IniFile));
 
         public IniComment AddComment(string text)
         {
@@ -41,7 +41,7 @@ namespace Martini
                 var property = PropertyFactory.CreateProperty(name, value, IniFile.Delimiters);
                 var iniProperty = new IniProperty(property, IniFile);
 
-                var contents = Sentence.Contents().ToList();
+                var contents = Sentence.Properties().ToList();
                 var hasContents = contents.Any();
                 if (!hasContents)
                 {

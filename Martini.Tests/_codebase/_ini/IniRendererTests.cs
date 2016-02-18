@@ -8,10 +8,11 @@ namespace Martini.Tests.IniRendererTests
     public class Render
     {
         [TestMethod]
-        public void RendersIniWithFormattingOptions()
+        public void RendersIniWithoutFormattingOptions()
         {
             var iniFile = new IniFile();
             var bar = iniFile.AddSection("bar");
+            bar.AddComment("foo");
             bar.AddProperty("baz", "baaz");
             bar.AddProperty("qux", "quux");
 

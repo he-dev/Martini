@@ -28,7 +28,7 @@ namespace Martini
                 RenderComments(section.Comments(), options, iniBuilder);
                 RenderSection(section, options, iniBuilder);
             }
-            RenderProperties(section.Contents(), options, iniBuilder);
+            RenderProperties(section.Properties(), options, iniBuilder);
         }
 
         internal static void RenderComments(IEnumerable<Sentence> comments, FormattingOptions options, StringBuilder iniBuilder)
