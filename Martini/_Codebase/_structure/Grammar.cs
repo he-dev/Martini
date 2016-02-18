@@ -49,8 +49,10 @@ namespace Martini
         internal static readonly string Space = ' '.ToString();
 
         internal static readonly char Backslash = '\\';
+
+        internal static readonly string GlobalSectionName = "__global";
         
-        internal static dynamic DefaultDelimiters => new DelimiterDictionary()
+        internal static DelimiterDictionary DefaultDelimiters => new DelimiterDictionary()
         {
             { TokenType.LeftSectionDelimiter, SectionDelimiter.SquareBrackets.Attribute<SectionDelimiterAttribute>().Left },
             { TokenType.RightSectionDelimiter, SectionDelimiter.SquareBrackets.Attribute<SectionDelimiterAttribute>().Right },

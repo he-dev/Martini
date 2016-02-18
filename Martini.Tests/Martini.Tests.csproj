@@ -54,7 +54,6 @@
   </Choose>
   <ItemGroup>
     <Compile Include="_codebase\ExtensionsTests.cs" />
-    <Compile Include="_codebase\IniWriterTests.cs" />
     <Compile Include="_codebase\LinkedObjectTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="_codebase\ParserTests.cs" />
@@ -64,6 +63,7 @@
     <Compile Include="_codebase\_factories\PropertyFactoryTests.cs" />
     <Compile Include="_codebase\_factories\CommentsFactoryTests.cs" />
     <Compile Include="_codebase\_factories\SectionFactoryTests.cs" />
+    <Compile Include="_codebase\_ini\IniRendererTests.cs" />
     <Compile Include="_codebase\_ini\IniCommentTests.cs" />
     <Compile Include="_codebase\_ini\IniFileTests.cs" />
     <Compile Include="_codebase\_ini\IniPropertyTests.cs" />
@@ -74,6 +74,10 @@
       <Project>{9527914C-9537-4EFC-A4CF-D4FA6E829E2C}</Project>
       <Name>Martini</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <None Include="_test_inis\well_formed.ini" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

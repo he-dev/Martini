@@ -29,28 +29,6 @@ namespace Martini
             var comment = CommentFactory.CreateComment(text, IniFile.Delimiters);
             Sentence.Previous = comment;
             return new IniComment(comment, IniFile);
-        }
-
-        internal override string Render(FormattingOptions formattingOptions)
-        {
-            var text = new StringBuilder();
-            text.Append(Sentence.Tokens.PropertyToken());
-
-            if (formattingOptions.HasFlag(FormattingOptions.SpaceBeforePropertyValueDelimiter))
-            {
-                text.Append(Grammar.Space);
-            }
-
-            text.Append(Sentence.Tokens.PropertyValueDelimiterToken());
-
-            if (formattingOptions.HasFlag(FormattingOptions.SpaceAfterPropertyValueDelimiter))
-            {
-                text.Append(Grammar.Space);
-            }
-
-            text.Append(Sentence.Tokens.ValueToken());
-
-            return text.ToString();
-        }
+        }       
     }
 }

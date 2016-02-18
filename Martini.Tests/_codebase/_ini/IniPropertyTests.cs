@@ -17,22 +17,7 @@ namespace Martini.Tests.IniPropertyTests
             Assert.AreEqual("bar", p.Value);
         }
     }
-
-    [TestClass]
-    public class Render
-    {
-        [TestMethod]
-        public void RendersTextWithFormattingOptions()
-        {
-            var s = PropertyFactory.CreateProperty("foo", "bar", Grammar.DefaultDelimiters);
-            var p = new IniProperty(s, null);
-
-            Assert.AreEqual("foo=bar", p.Render(FormattingOptions.None));
-            Assert.AreEqual("foo =bar", p.Render(FormattingOptions.SpaceBeforePropertyValueDelimiter));
-            Assert.AreEqual("foo = bar", p.Render(FormattingOptions.SpaceBeforePropertyValueDelimiter | FormattingOptions.SpaceAfterPropertyValueDelimiter));
-        }
-    }
-
+   
     [TestClass]
     public class AddComment
     {

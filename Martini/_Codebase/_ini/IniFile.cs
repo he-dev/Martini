@@ -9,8 +9,6 @@ namespace Martini
 {
     public class IniFile : DynamicObject
     {
-        private readonly Sentence _firstSentence;
-
         public IniFile(IniSettings settings = null)
         {
             settings = settings ?? new IniSettings();
@@ -18,12 +16,15 @@ namespace Martini
             DuplicateSectionHandling = settings.DuplicateSectionHandling;
             DuplicatePropertyHandling = settings.DuplicatePropertyHandling;
             Delimiters = settings.Delimiters;
+            GlobalSection = SectionFactory.CreateSection(Grammar.GlobalSectionName, Delimiters);
         }
 
-        internal IniFile(Sentence firstSentence, IniSettings settings = null) : this(settings)
+        internal IniFile(Sentence globalSection, IniSettings settings = null) : this(settings)
         {
-            _firstSentence = firstSentence;
+            GlobalSection = globalSection;
         }
+
+        internal Sentence GlobalSection { get; }
 
         public DuplicateSectionHandling DuplicateSectionHandling { get; }
 
@@ -31,9 +32,9 @@ namespace Martini
 
         internal dynamic Delimiters { get; }
 
-        public IniSection this[string name] => _firstSentence.After.Sections().Where(x => x.SectionToken() == name).Select(x => new IniSection(x, this)).SingleOrDefault();
+        public IniSection this[string name] => GlobalSection.After.Sections().Where(x => x.SectionToken() == name).Select(x => new IniSection(x, this)).SingleOrDefault();
 
-        public IEnumerable<IniSection> Sections => _firstSentence.After.Sections().Select(x => new IniSection(x, this));
+        public IEnumerable<IniSection> Sections => GlobalSection.After.Sections().Select(x => new IniSection(x, this));
 
         public bool ContainsSection(string name)
         {
@@ -48,9 +49,9 @@ namespace Martini
             return iniFile;
         }
 
-        public void Save(string fileName)
+        public void Save(string fileName, FormattingOptions options = FormattingOptions.None)
         {
-            IniWriter.Save(_firstSentence, fileName);
+            var iniText = IniRenderer.Render(GlobalSection, options);
         }
 
         public IniSection AddSection(string name)
@@ -61,7 +62,7 @@ namespace Martini
             var addSection = new Func<IniSection>(() =>
             {
                 var section = SectionFactory.CreateSection(name, Delimiters);
-                _firstSentence.After.Last().Next = section;
+                GlobalSection.After.Last().Next = section;
                 return new IniSection(section, this);
             });
 

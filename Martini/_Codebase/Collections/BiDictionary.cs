@@ -7,8 +7,8 @@ namespace Martini.Collections
 {
     internal class BiDictionary<TKey1, TKey2> : DynamicObject, IEnumerable<KeyPair<TKey1, TKey2>>
     {
-        private readonly Dictionary<TKey1, TKey2> _K1K2 = new Dictionary<TKey1, TKey2>();
-        private readonly Dictionary<TKey2, TKey1> _K2K1 = new Dictionary<TKey2, TKey1>();
+        protected readonly Dictionary<TKey1, TKey2> _K1K2 = new Dictionary<TKey1, TKey2>();
+        protected readonly Dictionary<TKey2, TKey1> _K2K1 = new Dictionary<TKey2, TKey1>();
 
         private readonly string _key1Name;
         private readonly string _key2Name;

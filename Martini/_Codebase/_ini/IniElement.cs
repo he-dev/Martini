@@ -23,7 +23,5 @@ namespace Martini
         {
             Sentence.Remove();
         }
-
-        internal abstract string Render(FormattingOptions formattingOptions);
     }
 }

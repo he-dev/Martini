@@ -129,31 +129,5 @@ namespace Martini.Tests.IniSectionTests
             Assert.IsTrue(section.Comments.ElementAt(0) == "baz");
             Assert.IsTrue(section.Comments.ElementAt(1) == "qux");
         }
-    }
-
-    [TestClass]
-    public class Render
-    {
-        [TestMethod]
-        public void RendersTextWithFormattingOptions()
-        {
-            var sentence = SectionFactory.CreateSection("foo", Grammar.DefaultDelimiters);
-            var section = new IniSection(sentence, null);
-
-            Assert.AreEqual("[foo]", section.Render(FormattingOptions.None));
-        }
-
-        [TestMethod]
-        public void RendersTextWithFormattingOptionsAndVariousDelimiters()
-        {
-            var settings = new IniSettings
-            {
-                SectionDelimiters = SectionDelimiter.AngleBrackets
-            };
-            var sentence = SectionFactory.CreateSection("foo", settings.Delimiters);
-            var section = new IniSection(sentence, null);
-
-            Assert.AreEqual("<foo>", section.Render(FormattingOptions.None));
-        }
-    }
+    }    
 }

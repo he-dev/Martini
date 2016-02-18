@@ -111,8 +111,9 @@ bazbaz=quxqux";
 
             var sentence = (Sentence)Tokenizer.Tokenize(ini, Grammar.DefaultDelimiters);
 
-            Assert.IsTrue(sentence.After.Count() == 6);
-            Assert.IsTrue(sentence.After.All(x => x.Type == SentenceType.Uninitialized));
+            Assert.AreEqual(7, sentence.After.Count());
+            // we skip the global section
+            Assert.IsTrue(sentence.After.Skip(1).All(x => x.Type == SentenceType.Uninitialized));
         }
     }
 }

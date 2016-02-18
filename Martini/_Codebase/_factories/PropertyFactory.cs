@@ -1,10 +1,11 @@
 using System.Collections.Generic;
+using Martini.Collections;
 
 namespace Martini
 {
     internal class PropertyFactory
     {
-        public static Sentence CreateProperty(string name, string value, dynamic delimiters)
+        public static Sentence CreateProperty(string name, string value, DelimiterDictionary delimiters)
         {
             var property = new Sentence
             {

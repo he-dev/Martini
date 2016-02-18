@@ -13,19 +13,7 @@ namespace Martini
         {
             get { return Sentence.Tokens.CommentToken(); }
             set { Sentence.Tokens.CommentToken().Value = value; }
-        }
-
-        internal override string Render(FormattingOptions formattingOptions)
-        {
-            var text = new StringBuilder().Append(Sentence.Tokens.CommentIndicaotrToken());
-            if (formattingOptions.HasFlag(FormattingOptions.SpaceAfterCommentIndicator))
-            {
-                text.Append(Grammar.Space);
-            }
-            text.Append(Sentence.Tokens.CommentToken());
-
-            return text.ToString();
-        }
+        }        
 
         public static bool operator ==(IniComment iniComment, string text)
         {

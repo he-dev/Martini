@@ -11,20 +11,21 @@ namespace Martini.Tests.ParserTests
         public void ParsesBlankLine()
         {
             var sentence = Parser.Parse("   ", new IniSettings());
-            Assert.IsTrue(sentence.Type == SentenceType.Blank);
+            Assert.IsTrue(sentence.Next.Type == SentenceType.Blank);
         }
 
         [TestMethod]
         public void ParsesInvalidLine()
         {
             var sentence = Parser.Parse("foo;bar", new IniSettings());
-            Assert.IsTrue(sentence.Type == SentenceType.Invalid);
+            Assert.IsTrue(sentence.Next.Type == SentenceType.Invalid);
         }
 
         [TestMethod]
         public void ParsesComment()
         {
-            var sentence = Parser.Parse(";foo", new IniSettings());
+            // skip global section
+            var sentence = Parser.Parse(";foo", new IniSettings()).Next;
             Assert.IsTrue(sentence.Type == SentenceType.Comment);
             Assert.IsTrue(sentence.Tokens.Count == 2);
             Assert.IsTrue(sentence.Tokens[0].Type == TokenType.CommentIndicator);
@@ -35,7 +36,7 @@ namespace Martini.Tests.ParserTests
         [TestMethod]
         public void ParsesSection()
         {
-            var sentence = Parser.Parse("[foo]", new IniSettings());
+            var sentence = Parser.Parse("[foo]", new IniSettings()).Next;
             Assert.IsTrue(sentence.Type == SentenceType.Section);
             Assert.IsTrue(sentence.Tokens.Count == 3);
             Assert.IsTrue(sentence.Tokens[0].Type == TokenType.LeftSectionDelimiter);
@@ -47,7 +48,7 @@ namespace Martini.Tests.ParserTests
         [TestMethod]
         public void ParsesProperty()
         {
-            var sentence = Parser.Parse("foo=bar", new IniSettings());
+            var sentence = Parser.Parse("foo=bar", new IniSettings()).Next;
             Assert.IsTrue(sentence.Type == SentenceType.Property);
             Assert.IsTrue(sentence.Tokens.Count == 3);
             Assert.IsTrue(sentence.Tokens[0].Type == TokenType.Property);
@@ -67,7 +68,7 @@ baz=qux
 [barbar]
 bazbaz=quxqux";
 
-            var sentence = (Sentence)Parser.Parse(ini, new IniSettings());
+            var sentence = (Sentence)Parser.Parse(ini, new IniSettings()).Next;
 
             Assert.IsTrue(sentence.After.Count() == 6);
             Assert.IsTrue(sentence.After.ElementAt(0).Type == SentenceType.Blank);
@@ -93,13 +94,15 @@ baz=baaz";
                 DuplicateSectionHandling = DuplicateSectionHandling.Allow
             });
 
-            Assert.IsTrue(sentence.After.Count() == 6);
-            Assert.IsTrue(sentence.After.ElementAt(0).Type == SentenceType.Blank);
-            Assert.IsTrue(sentence.After.ElementAt(1).Type == SentenceType.Comment);
-            Assert.IsTrue(sentence.After.ElementAt(2).Type == SentenceType.Section);
-            Assert.IsTrue(sentence.After.ElementAt(3).Type == SentenceType.Property);
-            Assert.IsTrue(sentence.After.ElementAt(4).Type == SentenceType.Section);
-            Assert.IsTrue(sentence.After.ElementAt(5).Type == SentenceType.Property);
+            var afterGlobal = sentence.After.Skip(1).ToList();
+
+            Assert.IsTrue(afterGlobal.Count() == 6);
+            Assert.IsTrue(afterGlobal.ElementAt(0).Type == SentenceType.Blank);
+            Assert.IsTrue(afterGlobal.ElementAt(1).Type == SentenceType.Comment);
+            Assert.IsTrue(afterGlobal.ElementAt(2).Type == SentenceType.Section);
+            Assert.IsTrue(afterGlobal.ElementAt(3).Type == SentenceType.Property);
+            Assert.IsTrue(afterGlobal.ElementAt(4).Type == SentenceType.Section);
+            Assert.IsTrue(afterGlobal.ElementAt(5).Type == SentenceType.Property);
         }
 
         [TestMethod]
@@ -134,12 +137,14 @@ baz=baaz";
                 DuplicateSectionHandling = DuplicateSectionHandling.Merge
             });
 
-            Assert.IsTrue(sentence.After.Count() == 5);
-            Assert.IsTrue(sentence.After.ElementAt(0).Type == SentenceType.Blank);
-            Assert.IsTrue(sentence.After.ElementAt(1).Type == SentenceType.Comment);
-            Assert.IsTrue(sentence.After.ElementAt(2).Type == SentenceType.Section);
-            Assert.IsTrue(sentence.After.ElementAt(3).Type == SentenceType.Property);
-            Assert.IsTrue(sentence.After.ElementAt(4).Type == SentenceType.Property);
+            var afterGlobal = sentence.After.Skip(1).ToList();
+
+            Assert.IsTrue(afterGlobal.Count() == 5);
+            Assert.IsTrue(afterGlobal.ElementAt(0).Type == SentenceType.Blank);
+            Assert.IsTrue(afterGlobal.ElementAt(1).Type == SentenceType.Comment);
+            Assert.IsTrue(afterGlobal.ElementAt(2).Type == SentenceType.Section);
+            Assert.IsTrue(afterGlobal.ElementAt(3).Type == SentenceType.Property);
+            Assert.IsTrue(afterGlobal.ElementAt(4).Type == SentenceType.Property);
         }
 
         [TestMethod]
@@ -156,12 +161,14 @@ bar=baaz";
                 DuplicatePropertyHandling = DuplicatePropertyHandling.Allow
             });
 
-            Assert.IsTrue(sentence.After.Count() == 5);
-            Assert.IsTrue(sentence.After.ElementAt(0).Type == SentenceType.Blank);
-            Assert.IsTrue(sentence.After.ElementAt(1).Type == SentenceType.Comment);
-            Assert.IsTrue(sentence.After.ElementAt(2).Type == SentenceType.Section);
-            Assert.IsTrue(sentence.After.ElementAt(3).Type == SentenceType.Property);
-            Assert.IsTrue(sentence.After.ElementAt(4).Type == SentenceType.Property);
+            var afterGlobal = sentence.After.Skip(1).ToList();
+
+            Assert.IsTrue(afterGlobal.Count() == 5);
+            Assert.IsTrue(afterGlobal.ElementAt(0).Type == SentenceType.Blank);
+            Assert.IsTrue(afterGlobal.ElementAt(1).Type == SentenceType.Comment);
+            Assert.IsTrue(afterGlobal.ElementAt(2).Type == SentenceType.Section);
+            Assert.IsTrue(afterGlobal.ElementAt(3).Type == SentenceType.Property);
+            Assert.IsTrue(afterGlobal.ElementAt(4).Type == SentenceType.Property);
         }
 
         [TestMethod]
@@ -194,12 +201,14 @@ bar=baaz";
                 DuplicatePropertyHandling = DuplicatePropertyHandling.KeepFirst
             });
 
-            Assert.IsTrue(sentence.After.Count() == 4);
-            Assert.IsTrue(sentence.After.ElementAt(0).Type == SentenceType.Blank);
-            Assert.IsTrue(sentence.After.ElementAt(1).Type == SentenceType.Comment);
-            Assert.IsTrue(sentence.After.ElementAt(2).Type == SentenceType.Section);
-            Assert.IsTrue(sentence.After.ElementAt(3).Type == SentenceType.Property);
-            Assert.IsTrue(sentence.After.ElementAt(3).Tokens.ValueToken() == "baar");
+            var afterGlobal = sentence.After.Skip(1).ToList();
+
+            Assert.IsTrue(afterGlobal.Count() == 4);
+            Assert.IsTrue(afterGlobal.ElementAt(0).Type == SentenceType.Blank);
+            Assert.IsTrue(afterGlobal.ElementAt(1).Type == SentenceType.Comment);
+            Assert.IsTrue(afterGlobal.ElementAt(2).Type == SentenceType.Section);
+            Assert.IsTrue(afterGlobal.ElementAt(3).Type == SentenceType.Property);
+            Assert.IsTrue(afterGlobal.ElementAt(3).Tokens.ValueToken() == "baar");
         }
 
         [TestMethod]
@@ -216,12 +225,14 @@ bar=baaz";
                 DuplicatePropertyHandling = DuplicatePropertyHandling.KeepLast
             });
 
-            Assert.IsTrue(sentence.After.Count() == 4);
-            Assert.IsTrue(sentence.After.ElementAt(0).Type == SentenceType.Blank);
-            Assert.IsTrue(sentence.After.ElementAt(1).Type == SentenceType.Comment);
-            Assert.IsTrue(sentence.After.ElementAt(2).Type == SentenceType.Section);
-            Assert.IsTrue(sentence.After.ElementAt(3).Type == SentenceType.Property);
-            Assert.IsTrue(sentence.After.ElementAt(3).Tokens.ValueToken() == "baaz");
+            var afterGlobal = sentence.After.Skip(1).ToList();
+
+            Assert.IsTrue(afterGlobal.Count() == 4);
+            Assert.IsTrue(afterGlobal.ElementAt(0).Type == SentenceType.Blank);
+            Assert.IsTrue(afterGlobal.ElementAt(1).Type == SentenceType.Comment);
+            Assert.IsTrue(afterGlobal.ElementAt(2).Type == SentenceType.Section);
+            Assert.IsTrue(afterGlobal.ElementAt(3).Type == SentenceType.Property);
+            Assert.IsTrue(afterGlobal.ElementAt(3).Tokens.ValueToken() == "baaz");
         }
 
         [TestMethod]
@@ -238,14 +249,16 @@ bar=baaz";
                 DuplicatePropertyHandling = DuplicatePropertyHandling.Rename
             });
 
-            Assert.IsTrue(sentence.After.Count() == 5);
-            Assert.IsTrue(sentence.After.ElementAt(0).Type == SentenceType.Blank);
-            Assert.IsTrue(sentence.After.ElementAt(1).Type == SentenceType.Comment);
-            Assert.IsTrue(sentence.After.ElementAt(2).Type == SentenceType.Section);
-            Assert.IsTrue(sentence.After.ElementAt(3).Type == SentenceType.Property);
-            Assert.IsTrue(sentence.After.ElementAt(3).Type == SentenceType.Property);
-            Assert.IsTrue(sentence.After.ElementAt(3).Tokens.PropertyToken() == "bar1");
-            Assert.IsTrue(sentence.After.ElementAt(4).Tokens.PropertyToken() == "bar2");
+            var afterGlobal = sentence.After.Skip(1).ToList();
+
+            Assert.IsTrue(afterGlobal.Count() == 5);
+            Assert.IsTrue(afterGlobal.ElementAt(0).Type == SentenceType.Blank);
+            Assert.IsTrue(afterGlobal.ElementAt(1).Type == SentenceType.Comment);
+            Assert.IsTrue(afterGlobal.ElementAt(2).Type == SentenceType.Section);
+            Assert.IsTrue(afterGlobal.ElementAt(3).Type == SentenceType.Property);
+            Assert.IsTrue(afterGlobal.ElementAt(3).Type == SentenceType.Property);
+            Assert.IsTrue(afterGlobal.ElementAt(3).Tokens.PropertyToken() == "bar1");
+            Assert.IsTrue(afterGlobal.ElementAt(4).Tokens.PropertyToken() == "bar2");
         }
     }
 }

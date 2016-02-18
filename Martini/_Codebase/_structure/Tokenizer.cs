@@ -9,22 +9,15 @@ namespace Martini
 {
     internal class Tokenizer
     {
-        public static Sentence Tokenize(string ini, dynamic delimiters)
+        public static Sentence Tokenize(string ini, DelimiterDictionary delimiters)
         {
             var lines = ini.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
-            var firstSentence = (Sentence)null;
+            var globalSection = SectionFactory.CreateSection(Grammar.GlobalSectionName, delimiters);
 
             var appendSentence = new Action<Sentence>(next =>
             {
-                if (firstSentence == null)
-                {
-                    firstSentence = next;
-                }
-                else
-                {
-                    firstSentence.After.Last().Next = next;
-                }
+                globalSection.After.Last().Next = next;
             });
 
             for (var i = 0; i < lines.Length; i++)
@@ -39,10 +32,10 @@ namespace Martini
                 });
             }
 
-            return firstSentence;
+            return globalSection;
         }
 
-        internal static List<Token> TokenizeLine(string line, dynamic delimiters)
+        internal static List<Token> TokenizeLine(string line, DelimiterDictionary delimiters)
         {
             var isEmptyLine = string.IsNullOrWhiteSpace(line);
             if (isEmptyLine)

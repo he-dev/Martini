@@ -53,7 +53,7 @@
     <Compile Include="_Codebase\Enums.cs" />
     <Compile Include="_Codebase\Extensions.cs" />
     <Compile Include="_Codebase\_structure\Grammar.cs" />
-    <Compile Include="_Codebase\IniWriter.cs" />
+    <Compile Include="_Codebase\_ini\IniRenderer.cs" />
     <Compile Include="_Codebase\_structure\Parser.cs" />
     <Compile Include="_Codebase\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

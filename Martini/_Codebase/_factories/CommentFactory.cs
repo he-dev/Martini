@@ -1,10 +1,11 @@
 using System.Collections.Generic;
+using Martini.Collections;
 
 namespace Martini
 {
     internal class CommentFactory
     {
-        public static Sentence CreateComment(string text, dynamic delimiters)
+        public static Sentence CreateComment(string text, DelimiterDictionary delimiters)
         {
             var section = new Sentence
             {

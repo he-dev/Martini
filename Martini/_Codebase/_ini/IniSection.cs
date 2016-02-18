@@ -34,7 +34,7 @@ namespace Martini
         public IniProperty AddProperty(string name, string value)
         {
             var properties = Properties.Where(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase)).ToList();
-            var propertyExists = Properties.Any();
+            var propertyExists = properties.Any();
 
             var addProperty = new Func<IniProperty>(() =>
             {
@@ -139,18 +139,6 @@ namespace Martini
         public override int GetHashCode()
         {
             return Name.GetHashCode();
-        }
-
-        internal override string Render(FormattingOptions formattingOptions)
-        {
-            var text = new StringBuilder();
-
-            text
-                .Append(Sentence.Tokens[0])
-                .Append(Sentence.Tokens[1])
-                .Append(Sentence.Tokens[2]);
-
-            return text.ToString();
-        }
+        }       
     }
 }
