@@ -10,92 +10,76 @@ namespace Martini
             var iniBuilder = new StringBuilder();
             foreach (var section in globalSection.After.Sections())
             {
-                var sectionText = RenderSectionContents(section, options);
-                iniBuilder.Append(sectionText);
+                RenderSectionContents(section, options, iniBuilder);                
             }
             var ini = iniBuilder.ToString();
             return ini;
         }
 
-        internal static string RenderSectionContents(Sentence section, FormattingOptions options)
+        internal static void RenderSectionContents(Sentence section, FormattingOptions options, StringBuilder iniBuilder)
         {
-            var sectionBuilder = new StringBuilder();
-
             if (options.HasFlag(FormattingOptions.BlankLineBeforeSection))
             {
-                sectionBuilder.AppendLine();
+                iniBuilder.AppendLine();
             }
 
             if (section.SectionToken() != Grammar.GlobalSectionName)
             {
-                sectionBuilder.Append(RenderComments(section.Comments(), options));
-                sectionBuilder.Append(RenderSection(section, options));
+                RenderComments(section.Comments(), options, iniBuilder);
+                RenderSection(section, options, iniBuilder);
             }
-            sectionBuilder.Append(RenderProperties(section.Contents(), options));
-
-            var sectionText = sectionBuilder.ToString();
-            return sectionText;
+            RenderProperties(section.Contents(), options, iniBuilder);
         }
 
-        internal static string RenderComments(IEnumerable<Sentence> comments, FormattingOptions options)
+        internal static void RenderComments(IEnumerable<Sentence> comments, FormattingOptions options, StringBuilder iniBuilder)
         {
-            var commentBuilder = new StringBuilder();
-
             foreach (var comment in comments)
             {
-                commentBuilder.Append(comment.Tokens.CommentIndicaotrToken());
+                iniBuilder.Append(comment.Tokens.CommentIndicaotrToken());
                 if (options.HasFlag(FormattingOptions.SpaceAfterCommentIndicator))
                 {
-                    commentBuilder.Append(Grammar.Space);
+                    iniBuilder.Append(Grammar.Space);
                 }
-                commentBuilder.AppendLine(comment.Tokens.CommentToken());
+                iniBuilder.AppendLine(comment.Tokens.CommentToken());
             }
-
-            var commentText = commentBuilder.ToString();
-            return commentText;
         }
 
-        internal static string RenderSection(Sentence section, FormattingOptions options)
+        internal static void RenderSection(Sentence section, FormattingOptions options, StringBuilder iniBuilder)
         {
-            var sectionBuilder = new StringBuilder();
-
-            sectionBuilder
+            if (iniBuilder.Length > 0)
+            {
+                iniBuilder.AppendLine();
+            }
+            iniBuilder
                 .Append(section.Tokens[0])
                 .Append(section.Tokens[1])
-                .AppendLine(section.Tokens[2]);
-
-            var sectionText = sectionBuilder.ToString();
-            return sectionText;
+                .Append(section.Tokens[2]);
         }
 
-        internal static string RenderProperties(IEnumerable<Sentence> properties, FormattingOptions options)
+        internal static void RenderProperties(IEnumerable<Sentence> properties, FormattingOptions options, StringBuilder iniBuilder)
         {
-            var propertyBuilder = new StringBuilder();
-
             foreach (var property in properties)
             {
                 var comments = property.Comments();
-                propertyBuilder.Append(RenderComments(comments, options));
+                RenderComments(comments, options, iniBuilder);
 
-                propertyBuilder.Append(property.Tokens.PropertyToken());
+                iniBuilder.AppendLine();
+                iniBuilder.Append(property.Tokens.PropertyToken());
 
                 if (options.HasFlag(FormattingOptions.SpaceBeforePropertyValueDelimiter))
                 {
-                    propertyBuilder.Append(Grammar.Space);
+                    iniBuilder.Append(Grammar.Space);
                 }
 
-                propertyBuilder.Append(property.Tokens.PropertyValueDelimiterToken());
+                iniBuilder.Append(property.Tokens.PropertyValueDelimiterToken());
 
                 if (options.HasFlag(FormattingOptions.SpaceAfterPropertyValueDelimiter))
                 {
-                    propertyBuilder.Append(Grammar.Space);
+                    iniBuilder.Append(Grammar.Space);
                 }
 
-                propertyBuilder.AppendLine(property.Tokens.ValueToken());
+                iniBuilder.Append(property.Tokens.ValueToken());
             }
-
-            var propertyText = propertyBuilder.ToString();
-            return propertyText;
         }
     }
 }
